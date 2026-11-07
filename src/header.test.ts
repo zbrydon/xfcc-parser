@@ -13,8 +13,8 @@ import {
 
 import { parseDistinguishedName, parseXfcc, type ParseOptions } from './index.ts';
 
-// Several hops and a text-format Issuer, so the grammar tests see every key.
-const TEXT = { format: 'text', maxElements: 32, allowTextIssuer: true } as const;
+// Several hops, so the grammar tests reach later elements.
+const TEXT = { format: 'text', maxElements: 32 } as const;
 const JSON_FORMAT = { format: 'json', maxElements: 32 } as const;
 const ONE_HOP = { format: 'text' } as const;
 
@@ -105,7 +105,7 @@ describe('Envoy documentation examples', () => {
 describe('text format as Envoy writes it', () => {
   it('accepts an empty URI, Subject and Issuer', () => {
     expect(parseXfcc(`Hash=${HASH_A};Subject="";URI=;Issuer=""`, TEXT)).toEqual([
-      { ...element, hash: HASH_A, subject: '', issuer: '' },
+      { ...element, hash: HASH_A, subject: '' },
     ]);
   });
 
@@ -233,10 +233,9 @@ describe('SAN injection', () => {
     expect(cross?.dns).toEqual(['admin.internal']);
   });
 
-  it('returns a text-format Issuer only when asked', () => {
+  it('never returns a text-format Issuer', () => {
     const issuer = `By=spiffe://p;Hash=${HASH_A};URI=spiffe://td/x;Issuer="CN=Trusted Root CA"`;
-    expect(parseXfcc(issuer, TEXT)[0]?.issuer).toBe('CN=Trusted Root CA');
-    expect(parseXfcc(issuer, ONE_HOP)[0]?.issuer).toBeNull();
+    expect(parseXfcc(issuer, TEXT)[0]?.issuer).toBeNull();
     expect(code(`Hash=${HASH_A};Issuer="CN"`, ONE_HOP)).toBe('INVALID_DN');
     expect(parseXfcc('[{"issuer":"CN=CA"}]', { format: 'json' })[0]?.issuer).toBe('CN=CA');
   });

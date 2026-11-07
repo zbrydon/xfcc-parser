@@ -127,13 +127,10 @@ describe('parseXfcc', () => {
     );
   });
 
-  it('returns a text-format Issuer only when allowTextIssuer is set', () => {
+  it('never returns a text-format Issuer', () => {
     // A URI SAN `spiffe://td/x;Issuer="CN=Trusted CA"` emits exactly this.
     const header = `Hash=${HASH};URI=spiffe://td/x;Issuer="CN=Trusted CA"`;
     expect(parseXfcc(header, TEXT)[0]?.issuer).toBeNull();
-    expect(parseXfcc(header, { format: 'text', allowTextIssuer: true })[0]?.issuer).toBe(
-      'CN=Trusted CA',
-    );
     // It is still validated.
     expect(codeOf(() => parseXfcc(`Hash=${HASH};Issuer="CN"`, TEXT))).toBe('INVALID_DN');
     expect(parseXfcc('[{"issuer":"CN=CA"}]', JSON_FORMAT)[0]?.issuer).toBe('CN=CA');
@@ -150,7 +147,7 @@ describe('parseXfcc', () => {
   );
 
   it('ignores options inherited from Object.prototype', () => {
-    const inherited = { format: 'text', maxElements: 2, allowTextIssuer: true };
+    const inherited = { format: 'text', maxElements: 2, maxLength: 1 << 20 };
     Object.assign(Object.prototype, inherited);
     try {
       // @ts-expect-error -- deliberately invalid at runtime
@@ -158,7 +155,9 @@ describe('parseXfcc', () => {
       const twoHops = `Hash=${HASH};URI=spiffe://td/a,Hash=${HASH};URI=spiffe://td/b`;
       expect(codeOf(() => parseXfcc(twoHops, { format: 'text' }))).toBe('TOO_MANY_ELEMENTS');
       expect(codeOf(() => getPeerSpiffeId(twoHops, { format: 'text' }))).toBe('TOO_MANY_ELEMENTS');
-      expect(parseXfcc(`Hash=${HASH};Issuer="CN=CA"`, { format: 'text' })[0]?.issuer).toBeNull();
+      expect(codeOf(() => parseXfcc('a'.repeat(64 * 1024 + 1), { format: 'text' }))).toBe(
+        'TOO_LONG',
+      );
     } finally {
       for (const key of Object.keys(inherited)) {
         Reflect.deleteProperty(Object.prototype, key);

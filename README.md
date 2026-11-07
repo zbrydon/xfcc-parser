@@ -67,20 +67,19 @@ Parses a header value and returns a deeply frozen array of elements in header or
 - `options.maxLength`: the maximum length in bytes. Defaults to `65536`, up to `1048576`. It is checked before anything else.
 - `options.format` (required): `'text'` or `'json'`. Set it to match the Envoy listener's [`set_current_client_cert_details.format`][set-current]. The format is never detected from the value, because a text header can be crafted to look like JSON: the leading `[` can come from a client-forwarded prefix and the trailing `]` from a URI SAN.
 - `options.maxElements`: the maximum number of elements (proxy hops). Defaults to `1`, up to `1024`. If more than one of your proxies appends an element, set it to the exact hop count: in the text format, a crafted SAN can add a forged last element.
-- `options.allowTextIssuer`: when `true`, return `issuer` from the text format. Defaults to `false`, so `issuer` is always `null` in the text format: a crafted URI SAN `a;Issuer="..."` is byte-for-byte a real `Issuer` pair. `Issuer` is still validated either way. Has no effect on the JSON format.
 
 `options` must be a plain object (from any realm, or with a `null` prototype) with `format` set. An unknown key, such as a misspelt `maxElement`, throws `TypeError` rather than being ignored, and so does a non-enumerable or symbol key. A polluted `Object.prototype` cannot change a default, and any other prototype, such as a class instance, throws `TypeError` rather than having its inherited options ignored.
 
-| Field            | Type                | Notes                                                                                                                 |
-| ---------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `by`             | `readonly string[]` | URI SANs of the proxy's certificate. Each is an [RFC 3986][rfc3986] URI.                                              |
-| `hash`           | `string \| null`    | 64 lowercase hex characters.                                                                                          |
-| `cert`           | `string \| null`    | Percent-decoded PEM, checked against [RFC 7468][rfc7468] (see below).                                                 |
-| `presentedChain` | `readonly string[]` | One PEM per certificate, leaf first, as the client presented it. **This is not the validated chain.**                 |
-| `subject`        | `string \| null`    | An [RFC 4514][rfc4514] string, exactly as Envoy sent it, escapes included. Use `parseDistinguishedName` to read it.   |
-| `uri`            | `readonly string[]` | URI SANs of the client certificate. Each is an RFC 3986 URI.                                                          |
-| `dns`            | `readonly string[]` | DNS SANs of the client certificate. A wildcard is allowed only as the whole leftmost label.                           |
-| `issuer`         | `string \| null`    | An RFC 4514 string. Envoy sends `Issuer` from 1.40. Always `null` in the text format unless `allowTextIssuer` is set. |
+| Field            | Type                | Notes                                                                                                                                                             |
+| ---------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `by`             | `readonly string[]` | URI SANs of the proxy's certificate. Each is an [RFC 3986][rfc3986] URI.                                                                                          |
+| `hash`           | `string \| null`    | 64 lowercase hex characters.                                                                                                                                      |
+| `cert`           | `string \| null`    | Percent-decoded PEM, checked against [RFC 7468][rfc7468] (see below).                                                                                             |
+| `presentedChain` | `readonly string[]` | One PEM per certificate, leaf first, as the client presented it. **This is not the validated chain.**                                                             |
+| `subject`        | `string \| null`    | An [RFC 4514][rfc4514] string, exactly as Envoy sent it, escapes included. Use `parseDistinguishedName` to read it.                                               |
+| `uri`            | `readonly string[]` | URI SANs of the client certificate. Each is an RFC 3986 URI.                                                                                                      |
+| `dns`            | `readonly string[]` | DNS SANs of the client certificate. A wildcard is allowed only as the whole leftmost label.                                                                       |
+| `issuer`         | `string \| null`    | An RFC 4514 string. Envoy sends `Issuer` from 1.40. Always `null` in the text format (see [Security / trust model](#security--trust-model)); use JSON to read it. |
 
 ### `getPeerSpiffeId(header, options)`
 
@@ -126,7 +125,7 @@ XFCC is only as trustworthy as the proxies that set it. Check all of the followi
 - **Make sure only your proxy can reach the service**, for example with mTLS between proxy and service or network policy. If the service can be reached directly, anyone can set the header.
 - **Do not authorize on `presentedChain`.** Envoy forwards the chain the client presented, not the chain it validated.
 - **Prefer the JSON format** (`set_current_client_cert_details.format: JSON`, Envoy 1.38 and later), and pass `format: 'json'`. In the text format Envoy writes `By`, `URI` and `DNS` values unescaped, and `,`, `;` and `=` are legal in a URI. So a CA that will sign a crafted SAN lets its holder add identities:
-  - A URI SAN `spiffe://td/x;URI=spiffe://td/admin` is byte-for-byte the same as two URI SANs, and a DNS SAN `a.com;DNS=admin.internal` the same as two DNS SANs. A URI SAN `https://x.example/;DNS=admin.internal` is the same as a URI SAN plus a DNS SAN, and `…;Issuer="CN=Trusted CA"` sets `issuer`. No parser can tell these apart, so require exactly one SAN across `uri` and `dns` combined (`getPeerSpiffeId` does this by default). For the same reason `issuer` is `null` in the text format unless you set `allowTextIssuer`; do not authorize on it if you do.
+  - A URI SAN `spiffe://td/x;URI=spiffe://td/admin` is byte-for-byte the same as two URI SANs, and a DNS SAN `a.com;DNS=admin.internal` the same as two DNS SANs. A URI SAN `https://x.example/;DNS=admin.internal` is the same as a URI SAN plus a DNS SAN, and `…;Issuer="CN=Trusted CA"` is the same as a real `Issuer`. No parser can tell these apart, so require exactly one SAN across `uri` and `dns` combined (`getPeerSpiffeId` does this by default). For the same reason `issuer` is always `null` in the text format: `Issuer` is still parsed and validated, but never returned.
   - A URI SAN `https://x.example/a,By=…;Hash=…;URI=spiffe://td/admin` adds a forged last element. `maxElements` defaults to `1`; if you raise it, set it to the exact hop count.
   - SPIFFE IDs cannot contain `;` or `,`, so a CA that enforces the SPIFFE ID syntax (such as SPIRE) never issues these SANs as SPIFFE IDs. It may still issue them in a non-SPIFFE URI SAN, such as the `https:` one above.
 - **In the JSON format, keep `SANITIZE_SET` at the edge.** With `APPEND_FORWARD`, Envoy appends in the text format when the incoming header is not a bracketed JSON array. A client-forwarded prefix plus a crafted SAN can then wrap Envoy's text in a JSON string. The parser rejects any `by` or `uri` value containing `Hash=` for this reason.

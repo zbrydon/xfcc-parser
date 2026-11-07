@@ -15,7 +15,6 @@ export const fuzz = (data) => {
     maxLength: (data[6] & 4) !== 0 ? maxLength % 256 : maxLength,
     maxElements: (data[6] & 8) !== 0 ? maxElements % 4 : maxElements,
     format: (data[5] & 1) === 0 ? 'text' : 'json',
-    allowTextIssuer: (data[5] & 4) !== 0,
   };
   const valid =
     options.maxLength >= 1 &&

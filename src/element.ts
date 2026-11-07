@@ -22,7 +22,6 @@ export type Key = (typeof KEY)[keyof typeof KEY];
 /** The options the format parsers read. */
 export interface ElementOptions {
   readonly maxElements: number;
-  readonly allowTextIssuer: boolean;
 }
 
 /**
@@ -61,12 +60,10 @@ export class ElementBuilder {
   readonly #dns: string[] = [];
   #issuer: string | null = null;
   readonly #text: boolean;
-  readonly #options: ElementOptions;
 
   /** In the `text` format every element must have a `Hash`. */
-  constructor(format: 'text' | 'json', options: ElementOptions) {
+  constructor(format: 'text' | 'json') {
     this.#text = format === 'text';
-    this.#options = options;
   }
 
   /**
@@ -181,8 +178,8 @@ export class ElementBuilder {
       uri: Object.freeze(this.#uri),
       dns: Object.freeze(this.#dns),
       // In the text format a URI SAN `a;Issuer="..."` is indistinguishable
-      // from a real Issuer.
-      issuer: !this.#text || this.#options.allowTextIssuer ? this.#issuer : null,
+      // from a real Issuer, so it is validated but never returned.
+      issuer: this.#text ? null : this.#issuer,
     });
   }
 }

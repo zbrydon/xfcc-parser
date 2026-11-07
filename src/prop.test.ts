@@ -15,13 +15,8 @@ import {
 
 fc.configureGlobal({ numRuns: 512 });
 
-// Several hops and a text-format Issuer, so round trips cover every key.
-const TEXT = {
-  format: 'text',
-  maxElements: 32,
-  allowTextIssuer: true,
-  maxLength: 1 << 20,
-} as const;
+// Several hops, so round trips cover multi-element headers.
+const TEXT = { format: 'text', maxElements: 32, maxLength: 1 << 20 } as const;
 const JSON_FORMAT = { format: 'json', maxElements: 32, maxLength: 1 << 20 } as const;
 
 const char = (chars: string) => fc.constantFrom(...chars.split(''));
@@ -178,7 +173,10 @@ describe('round trips', () => {
   it('parses what the text emitter writes', () => {
     fc.assert(
       fc.property(fc.array(element, { minLength: 1, maxLength: 3 }), (elements) => {
-        expect(parseXfcc(emitText(elements), TEXT)).toEqual(elements);
+        // The text format validates `Issuer` but never returns it.
+        expect(parseXfcc(emitText(elements), TEXT)).toEqual(
+          elements.map((el) => ({ ...el, issuer: null })),
+        );
       }),
     );
   });

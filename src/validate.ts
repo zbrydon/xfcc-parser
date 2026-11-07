@@ -198,7 +198,6 @@ export const PARSE_OPTION_KEYS: ReadonlySet<string> = new Set([
   'maxLength',
   'maxElements',
   'format',
-  'allowTextIssuer',
 ]);
 
 /**

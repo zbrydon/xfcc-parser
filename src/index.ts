@@ -38,7 +38,7 @@ export interface XfccElement {
   readonly dns: readonly string[];
   /**
    * The client certificate's issuer as an RFC 4514 string. Always `null` in
-   * the text format unless `allowTextIssuer` is set.
+   * the text format, where a crafted URI SAN `a;Issuer="..."` can set it.
    */
   readonly issuer: string | null;
 }
@@ -58,11 +58,6 @@ export interface ParseOptions {
    * auto-detected, because a text header can be crafted to look like JSON.
    */
   readonly format: 'text' | 'json';
-  /**
-   * Return `issuer` from the text format. Defaults to `false`, because a
-   * crafted URI SAN `a;Issuer="..."` sets it. Has no effect on JSON.
-   */
-  readonly allowTextIssuer?: boolean;
 }
 
 /** A relative distinguished name: one or more attributes joined by `+`. */
@@ -84,7 +79,6 @@ interface NormalizedOptions {
   readonly maxLength: number;
   readonly maxElements: number;
   readonly format: 'text' | 'json';
-  readonly allowTextIssuer: boolean;
 }
 
 // Plain JavaScript can omit `options`, which then fails like any invalid one.
@@ -92,22 +86,18 @@ interface NormalizedOptions {
 // `TypeError`: an `XfccError` would read as a rejected caller.
 const normalizeOptions = (options: ParseOptions | null | undefined): NormalizedOptions => {
   const own = readOptions(options, PARSE_OPTION_KEYS);
-  const { format, allowTextIssuer } = own;
+  const { format } = own;
   if (format === undefined) {
     throw new TypeError('format is required');
   }
   if (format !== 'text' && format !== 'json') {
     throw invalidOption('format');
   }
-  if (allowTextIssuer !== undefined && typeof allowTextIssuer !== 'boolean') {
-    throw invalidOption('allowTextIssuer');
-  }
   return {
     maxLength: checkInteger('maxLength', own.maxLength, MAX_LENGTH_LIMIT) ?? DEFAULT_MAX_LENGTH,
     maxElements:
       checkInteger('maxElements', own.maxElements, MAX_ELEMENTS_LIMIT) ?? DEFAULT_MAX_ELEMENTS,
     format,
-    allowTextIssuer: allowTextIssuer ?? false,
   };
 };
 

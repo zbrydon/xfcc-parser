@@ -101,7 +101,7 @@ class Parser {
 
   #element(): XfccElement {
     const start = this.#pos;
-    const builder = new ElementBuilder('text', this.#options);
+    const builder = new ElementBuilder('text');
     let lastKey = -1;
     for (;;) {
       lastKey = this.#pair(builder, lastKey);

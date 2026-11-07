@@ -279,8 +279,8 @@ class Parser {
 const LIST_ORDER = [KEY.BY, KEY.CHAIN, KEY.URI, KEY.DNS] as const;
 const SINGLE_ORDER = [KEY.HASH, KEY.CERT, KEY.SUBJECT, KEY.ISSUER] as const;
 
-const toElement = (raw: RawElement, options: ElementOptions): XfccElement => {
-  const builder = new ElementBuilder('json', options);
+const toElement = (raw: RawElement): XfccElement => {
+  const builder = new ElementBuilder('json');
   for (const key of LIST_ORDER) {
     const list = raw.lists.get(key);
     if (list?.values.length === 0) {
@@ -313,5 +313,5 @@ export const parseJson = (input: string, options: ElementOptions): XfccElement[]
   if (raw.length === 0) {
     throw reject('EMPTY', 0);
   }
-  return raw.map((element) => toElement(element, options));
+  return raw.map(toElement);
 };
