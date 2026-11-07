@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { errorOf } from '../test/helpers.ts';
+
 import {
   getPeerSpiffeId,
-  SpiffeError,
   XfccError,
   type PeerSpiffeIdOptions,
-  type SpiffeErrorCode,
+  type XfccErrorCode,
 } from './index.ts';
 
 const HASH = '468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688';
@@ -15,18 +16,6 @@ const TEXT = { format: 'text' } as const;
 const JSON_FORMAT = { format: 'json' } as const;
 
 const json = (...uris: string[][]) => JSON.stringify(uris.map((uri) => ({ hash: HASH, uri })));
-
-const errorOf = (fn: () => unknown): SpiffeError | XfccError => {
-  try {
-    fn();
-  } catch (error) {
-    if (error instanceof SpiffeError || error instanceof XfccError) {
-      return error;
-    }
-    throw error;
-  }
-  throw new Error('expected an error');
-};
 
 const codeOf = (fn: () => unknown): string => errorOf(fn).code;
 
@@ -159,7 +148,7 @@ describe('getPeerSpiffeId', () => {
 });
 
 describe('SPIFFE ID validation', () => {
-  const cases: [string, string[], SpiffeErrorCode][] = [
+  const cases: [string, string[], XfccErrorCode][] = [
     ['no URI', [], 'NOT_ONE_URI'],
     ['two URIs', [API, API], 'NOT_ONE_URI'],
     ['a non-SPIFFE URI', ['http://td/ns/a/sa/b'], 'NOT_SPIFFE'],
@@ -241,7 +230,9 @@ describe('SPIFFE ID validation', () => {
 
   it('keeps input out of error messages', () => {
     const error = errorOf(() => peerOf('spiffe://td/secret;x'));
-    expect(error).toBeInstanceOf(SpiffeError);
-    expect(error.message).not.toContain('secret');
+    expect(error).toBeInstanceOf(XfccError);
+    expect(error.code).toBe('INVALID_SPIFFE_ID');
+    expect(error.offset).toBeUndefined();
+    expect(error.message).toBe('INVALID_SPIFFE_ID: URI SAN is not a valid SPIFFE ID');
   });
 });

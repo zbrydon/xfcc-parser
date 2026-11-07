@@ -29,34 +29,39 @@ const MESSAGES = {
   INVALID_JSON: 'invalid JSON-format XFCC value',
 } as const;
 
-// `INVALID_OPTION` has no fixed message: each caller names the option.
-export type XfccErrorCode = keyof typeof MESSAGES | 'INVALID_OPTION';
+// These have no offset, and no fixed message: `INVALID_OPTION` names the
+// option, and the rest are `getPeerSpiffeId`'s checks of a parsed element.
+export type XfccErrorCode =
+  | keyof typeof MESSAGES
+  | 'INVALID_OPTION'
+  | 'NO_PEER'
+  | 'NOT_ONE_URI'
+  | 'NOT_ONE_SAN'
+  | 'NOT_SPIFFE'
+  | 'INVALID_SPIFFE_ID';
 
-/** An error with no stack trace. */
-export class StacklessError extends Error {
-  constructor(message: string) {
+/**
+ * Thrown for any header, distinguished name or SPIFFE ID that does not
+ * strictly match the format. The message never contains input, so it is safe
+ * to log. It has no stack trace.
+ */
+export class XfccError extends Error {
+  override readonly name = 'XfccError';
+  readonly code: XfccErrorCode;
+  /**
+   * Byte offset into the input where the problem was found. Unset for
+   * `INVALID_OPTION` and for `getPeerSpiffeId`'s own codes.
+   */
+  readonly offset: number | undefined;
+
+  constructor(code: XfccErrorCode, message: string, offset?: number) {
     // Capturing a stack trace is most of the cost of rejecting a header, and
     // the stack of an error about untrusted input says nothing useful.
     // `Reflect.set` fails quietly where `Error` is frozen (SES lockdown, say).
     const { stackTraceLimit } = Error;
     Reflect.set(Error, 'stackTraceLimit', 0);
-    super(message);
-    Reflect.set(Error, 'stackTraceLimit', stackTraceLimit);
-  }
-}
-
-/**
- * Thrown for any header or distinguished name that does not strictly match
- * the format. The message never contains input, so it is safe to log.
- */
-export class XfccError extends StacklessError {
-  override readonly name = 'XfccError';
-  readonly code: XfccErrorCode;
-  /** Byte offset into the input where the problem was found. Unset for `INVALID_OPTION`. */
-  readonly offset: number | undefined;
-
-  constructor(code: XfccErrorCode, message: string, offset?: number) {
     super(offset === undefined ? `${code}: ${message}` : `${code}: ${message} (at byte ${offset})`);
+    Reflect.set(Error, 'stackTraceLimit', stackTraceLimit);
     this.code = code;
     this.offset = offset;
   }

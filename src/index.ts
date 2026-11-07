@@ -185,13 +185,7 @@ export const parseXfcc = (
   return Object.freeze(parseHeader(value, normalized));
 };
 
-export {
-  getPeerSpiffeId,
-  SpiffeError,
-  type SpiffeErrorCode,
-  type SpiffeId,
-  type PeerSpiffeIdOptions,
-} from './spiffe.ts';
+export { getPeerSpiffeId, type SpiffeId, type PeerSpiffeIdOptions } from './spiffe.ts';
 
 const joinHeaderLines = (lines: readonly string[]): string => {
   if (!Array.isArray(lines) || !lines.every((line) => typeof line === 'string')) {
