@@ -1,4 +1,4 @@
-import { ok, safeParseXfcc } from './common.mjs';
+import { ok, tryParse } from './common.mjs';
 
 // The documented ceilings of `maxLength` and `maxElements`.
 const MAX_LENGTH_LIMIT = 1 << 20;
@@ -26,7 +26,7 @@ export const fuzz = (data) => {
   const bytes = Buffer.byteLength(input);
   let result;
   try {
-    result = safeParseXfcc(input, options);
+    result = tryParse(input, options);
   } catch (error) {
     // An invalid option is a caller bug, so it throws TypeError, never XfccError.
     ok(error instanceof TypeError && !valid);

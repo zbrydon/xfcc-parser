@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { ok, safeParseXfcc, urlEncode } from './common.mjs';
+import { ok, tryParse, urlEncode } from './common.mjs';
 
 /** A DER SEQUENCE around `content`. */
 const der = (content) => {
@@ -14,7 +14,7 @@ const pem = (bytes) => {
   return `-----BEGIN CERTIFICATE-----\n${lines.map((line) => `${line}\n`).join('')}-----END CERTIFICATE-----\n`;
 };
 
-const isAccepted = (header, options) => safeParseXfcc(header, options).ok;
+const isAccepted = (header, options) => tryParse(header, options).ok;
 
 // Random bytes almost never form valid PEM, so build well-formed headers from
 // the input and check the whole Cert / Chain path accepts them.
@@ -40,7 +40,7 @@ export const fuzz = (data) => {
     ['json', jsonHeader],
   ]) {
     const options = { format, maxLength: 1 << 20 };
-    const result = safeParseXfcc(header, options);
+    const result = tryParse(header, options);
     ok(result.ok, `${format}: ${header}`);
     ok(result.value[0].hash === hash);
     ok(result.value[0].cert === leaf);

@@ -5,7 +5,7 @@ import { parseXfcc, XfccError } from '../../dist/index.mjs';
 export { deepStrictEqual, ok };
 
 /** `parseXfcc` as `{ ok, value }` or `{ ok, error }`. Rethrows anything but an `XfccError`. */
-export const safeParseXfcc = (header, options) => {
+export const tryParse = (header, options) => {
   try {
     return { ok: true, value: parseXfcc(header, options) };
   } catch (error) {
