@@ -1,6 +1,6 @@
-import { parseDistinguishedName, safeParseXfcc, XfccError } from '../../dist/index.mjs';
+import { parseDistinguishedName, XfccError } from '../../dist/index.mjs';
 
-import { ok, text } from './common.mjs';
+import { ok, safeParseXfcc, text } from './common.mjs';
 
 const HASH = /^[0-9a-f]{64}$/;
 const DN_CHARS = /^[\x20-\x7e]*$/;

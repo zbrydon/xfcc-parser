@@ -83,18 +83,6 @@ Parses a header value and returns a deeply frozen array of elements in header or
 | `dns`            | `readonly string[]` | DNS SANs of the client certificate. A wildcard is allowed only as the whole leftmost label.                           |
 | `issuer`         | `string \| null`    | An RFC 4514 string. Envoy sends `Issuer` from 1.40. Always `null` in the text format unless `allowTextIssuer` is set. |
 
-### `safeParseXfcc(header, options)`
-
-Takes the same arguments as `parseXfcc` but returns `{ ok: true, value }` or `{ ok: false, error }` instead of throwing, where `error` is the `XfccError` that `parseXfcc` would have thrown. Invalid `options` are reported the same way. A `header` of the wrong type is a bug in the caller and still throws `TypeError`.
-
-```ts
-const result = safeParseXfcc(request.headers['x-forwarded-client-cert'], { format: 'json' });
-if (!result.ok) {
-  throw new Forbidden(result.error.code);
-}
-const nearest = result.value.at(-1);
-```
-
 ### `getPeerSpiffeId(header, options)`
 
 Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest to this service: the last element of the header. It takes the same arguments as `parseXfcc`, plus `options.requireSingleSan`. If more than one of your proxies appends an element, set `maxElements` to the exact hop count.
@@ -122,15 +110,13 @@ It throws `SpiffeError` (a `code` of `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `N
 
 It cannot tell whether a crafted SAN forged the last element (see [Security / trust model](#security--trust-model)), so it is only as safe as the `maxElements` you pass. It does not check `issuer`, and checks `dns` only when `options.requireSingleSan` is `true`. By default, in the text format a URI SAN `spiffe://td/a;DNS=b` returns `spiffe://td/a`, because it is byte-for-byte a certificate with both SANs and rejecting it would reject every certificate that has a DNS SAN. Set `requireSingleSan` if your workload certificates have only a URI SAN, or if you also read `dns`. Unless a crafted SAN forged the element, the returned ID is always the part before the first `;` of a SAN your CA signed, so this matters only for a CA that signs URI SANs without checking the SPIFFE ID syntax; behind such a CA, use the JSON format. If a proxy that is not the caller sits between the caller and this service, this returns that proxy's ID. Match the result against an allow list with exact comparisons, on `id` or on `trustDomain` as well as `namespace` and `serviceAccount`.
 
-`safeGetPeerSpiffeId` returns `{ ok: true, value }` or `{ ok: false, error }` instead of throwing. `spiffeIdOf(element, options?)` does the same check on an element you already parsed; its only option is `requireSingleSan`, options follow the same rules as `parseXfcc`'s, and invalid ones throw `TypeError`.
-
 ### `parseDistinguishedName(dn)`
 
 Parses an RFC 4514 distinguished name into RDNs, in string order. That is the most specific RDN first, the reverse of ASN.1 order. Escapes are decoded and multi-valued RDNs (`+`) are kept together. A `#hex` value is returned as lowercase hex with `encoding: 'hex'`. A decoded value can hold any character the certificate does, including control and bidi characters: Envoy writes a tab as `\09`, and this returns it as a raw tab. Escape values before you log or display them. Input longer than 1 MiB (the `maxLength` ceiling) is rejected with `TOO_LONG`. A string with a lone surrogate is rejected with `INVALID_DN`.
 
 ### Errors
 
-`parseXfcc` and `parseDistinguishedName` throw `XfccError`, which has a stable `code` and the byte `offset` where the problem was found (`INVALID_OPTION` has none). For `INVALID_JSON`, that is the first offending byte; for an invalid JSON value, the value's opening quote or bracket; for an element-level error such as `MISSING_CERT_OR_HASH`, the start of the element; for `TOO_LONG`, the limit, which is the first byte past it. A surplus JSON element reports `TOO_MANY_ELEMENTS` without being validated. `safeParseXfcc` returns the same error. Messages never include the input, so they are safe to log. An `XfccError` has no stack trace: capturing one dominates the cost of rejecting a header, and it says nothing about untrusted input. Codes:
+`parseXfcc` and `parseDistinguishedName` throw `XfccError`, which has a stable `code` and the byte `offset` where the problem was found (`INVALID_OPTION` has none). For `INVALID_JSON`, that is the first offending byte; for an invalid JSON value, the value's opening quote or bracket; for an element-level error such as `MISSING_CERT_OR_HASH`, the start of the element; for `TOO_LONG`, the limit, which is the first byte past it. A surplus JSON element reports `TOO_MANY_ELEMENTS` without being validated. Messages never include the input, so they are safe to log. An `XfccError` has no stack trace: capturing one dominates the cost of rejecting a header, and it says nothing about untrusted input. Codes:
 
 `INVALID_OPTION`, `EMPTY`, `TOO_LONG`, `TOO_MANY_ELEMENTS`, `INVALID_CHAR`, `EMPTY_ELEMENT`, `EMPTY_PAIR`, `MISSING_EQUALS`, `UNKNOWN_KEY`, `DUPLICATE_KEY`, `EMPTY_VALUE`, `UNTERMINATED_QUOTE`, `UNEXPECTED_AFTER_VALUE`, `INVALID_QUOTING`, `INVALID_ESCAPE`, `INVALID_HASH`, `INVALID_URI`, `INVALID_DNS`, `INVALID_PERCENT_ENCODING`, `INVALID_PEM`, `INVALID_DN`, `KEY_ORDER`, `MISSING_HASH`, `MISSING_CERT_OR_HASH`, `HASH_MISMATCH`, `INVALID_JSON`.
 

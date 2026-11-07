@@ -137,13 +137,6 @@ const normalizeOptions = (
   };
 };
 
-/** The result of `safeParseXfcc`: the elements, or the error `parseXfcc` would throw. */
-export type XfccResult =
-  | { readonly ok: true; readonly value: readonly XfccElement[] }
-  | { readonly ok: false; readonly error: XfccError };
-
-const fail = (error: XfccError): XfccResult => Object.freeze({ ok: false, error });
-
 const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] => {
   // A string's UTF-16 length never exceeds its UTF-8 length.
   if (value.length > options.maxLength || Buffer.byteLength(value) > options.maxLength) {
@@ -166,36 +159,6 @@ const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] =
 };
 
 /**
- * Like `parseXfcc`, but returns a malformed header as `{ ok: false, error }`
- * instead of throwing. Check `ok` before using `value`.
- *
- * Invalid `options` are reported the same way. A `header` that is not a
- * string, an array of strings or `undefined` is a bug in the caller and still
- * throws `TypeError`.
- */
-export const safeParseXfcc = (
-  header: string | readonly string[] | undefined,
-  options: ParseOptions,
-): XfccResult => {
-  const normalized = normalizeOptions(options);
-  if (normalized instanceof XfccError) {
-    return fail(normalized);
-  }
-  if (header === undefined) {
-    return Object.freeze({ ok: true, value: Object.freeze([]) });
-  }
-  const value = typeof header === 'string' ? header : joinHeaderLines(header);
-  try {
-    return Object.freeze({ ok: true, value: Object.freeze(parseHeader(value, normalized)) });
-  } catch (error) {
-    if (error instanceof XfccError) {
-      return fail(error);
-    }
-    throw error;
-  }
-};
-
-/**
  * Parses an `x-forwarded-client-cert` header value.
  *
  * Elements are returned in header order, so the LAST element is the one
@@ -211,22 +174,22 @@ export const parseXfcc = (
   header: string | readonly string[] | undefined,
   options: ParseOptions,
 ): readonly XfccElement[] => {
-  const result = safeParseXfcc(header, options);
-  if (!result.ok) {
-    throw result.error;
+  const normalized = normalizeOptions(options);
+  if (normalized instanceof XfccError) {
+    throw normalized;
   }
-  return result.value;
+  if (header === undefined) {
+    return Object.freeze([]);
+  }
+  const value = typeof header === 'string' ? header : joinHeaderLines(header);
+  return Object.freeze(parseHeader(value, normalized));
 };
 
 export {
   getPeerSpiffeId,
-  safeGetPeerSpiffeId,
   SpiffeError,
-  spiffeIdOf,
   type SpiffeErrorCode,
   type SpiffeId,
-  type SpiffeIdResult,
-  type SpiffeIdOptions,
   type PeerSpiffeIdOptions,
 } from './spiffe.ts';
 

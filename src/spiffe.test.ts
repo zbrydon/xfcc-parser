@@ -2,14 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getPeerSpiffeId,
-  parseXfcc,
-  safeGetPeerSpiffeId,
   SpiffeError,
-  spiffeIdOf,
   XfccError,
   type PeerSpiffeIdOptions,
   type SpiffeErrorCode,
-  type XfccElement,
 } from './index.ts';
 
 const HASH = '468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688';
@@ -20,26 +16,25 @@ const JSON_FORMAT = { format: 'json' } as const;
 
 const json = (...uris: string[][]) => JSON.stringify(uris.map((uri) => ({ hash: HASH, uri })));
 
-const codeOf = (fn: () => unknown): string | undefined => {
+const errorOf = (fn: () => unknown): SpiffeError | XfccError => {
   try {
     fn();
   } catch (error) {
     if (error instanceof SpiffeError || error instanceof XfccError) {
-      return error.code;
+      return error;
     }
     throw error;
   }
-  return undefined;
+  throw new Error('expected an error');
 };
 
-const element = (...uri: string[]): XfccElement => {
-  const [first] =
-    uri.length === 0 ? parseXfcc(`Hash=${HASH}`, TEXT) : parseXfcc(json(uri), JSON_FORMAT);
-  if (first === undefined) {
-    throw new Error('expected an element');
-  }
-  return first;
-};
+const codeOf = (fn: () => unknown): string => errorOf(fn).code;
+
+/** The peer of a one-element header whose client certificate has `uri` as its URI SANs. */
+const peerOf = (...uri: string[]) =>
+  uri.length === 0
+    ? getPeerSpiffeId(`Hash=${HASH}`, TEXT)
+    : getPeerSpiffeId(json(uri), JSON_FORMAT);
 
 describe('getPeerSpiffeId', () => {
   it('splits an Istio ID', () => {
@@ -61,7 +56,7 @@ describe('getPeerSpiffeId', () => {
     expect(id.path).toBe('/workload/billing');
     expect(id.namespace).toBeNull();
     expect(id.serviceAccount).toBeNull();
-    expect(spiffeIdOf(element('spiffe://td/ns/a/sa/b/extra')).namespace).toBeNull();
+    expect(peerOf('spiffe://td/ns/a/sa/b/extra').namespace).toBeNull();
   });
 
   it('uses the last element', () => {
@@ -147,7 +142,6 @@ describe('getPeerSpiffeId', () => {
     try {
       const header = `Hash=${HASH};URI=spiffe://td/x;DNS=admin.internal`;
       expect(getPeerSpiffeId(header, TEXT).id).toBe('spiffe://td/x');
-      expect(spiffeIdOf({ ...element(API), dns: ['admin.internal'] }).id).toBe(API);
     } finally {
       Reflect.deleteProperty(Object.prototype, 'requireSingleSan');
     }
@@ -164,37 +158,7 @@ describe('getPeerSpiffeId', () => {
   });
 });
 
-describe('safeGetPeerSpiffeId', () => {
-  it('returns the ID', () => {
-    const result = safeGetPeerSpiffeId(json([API]), { format: 'json' });
-    expect(result.ok && result.value.id).toBe(API);
-  });
-
-  it('returns SpiffeError and XfccError failures', () => {
-    const noPeer = safeGetPeerSpiffeId(undefined, TEXT);
-    expect(!noPeer.ok && noPeer.error).toBeInstanceOf(SpiffeError);
-    const bad = safeGetPeerSpiffeId('nonsense', TEXT);
-    expect(!bad.ok && bad.error).toBeInstanceOf(XfccError);
-    expect(Object.isFrozen(bad)).toBe(true);
-  });
-
-  it.each([
-    { format: 'text', maxElements: 0 },
-    { format: 'text', maxElement: 2 },
-    { format: 'text', requireSingleSan: 'yes' },
-    { format: 'text', require_single_san: true },
-    {},
-    null,
-    'json',
-    [1],
-  ])('reports invalid options %j without throwing', (options) => {
-    // @ts-expect-error -- deliberately invalid at runtime
-    const result = safeGetPeerSpiffeId(undefined, options);
-    expect(!result.ok && result.error.code).toBe('INVALID_OPTION');
-  });
-});
-
-describe('spiffeIdOf', () => {
+describe('SPIFFE ID validation', () => {
   const cases: [string, string[], SpiffeErrorCode][] = [
     ['no URI', [], 'NOT_ONE_URI'],
     ['two URIs', [API, API], 'NOT_ONE_URI'],
@@ -219,58 +183,65 @@ describe('spiffeIdOf', () => {
   ];
 
   it.each(cases)('rejects %s', (_name, uris, code) => {
-    expect(codeOf(() => spiffeIdOf(element(...uris)))).toBe(code);
+    expect(codeOf(() => peerOf(...uris))).toBe(code);
   });
 
   it('rejects a DNS SAN only when requireSingleSan is set', () => {
-    const [both] = parseXfcc(JSON.stringify([{ uri: [API], dns: ['api.example'] }]), JSON_FORMAT);
-    if (both === undefined) {
-      throw new Error('expected an element');
-    }
-    expect(spiffeIdOf(both).id).toBe(API);
-    expect(codeOf(() => spiffeIdOf(both, { requireSingleSan: true }))).toBe('NOT_ONE_SAN');
+    const both = JSON.stringify([{ uri: [API], dns: ['api.example'] }]);
+    expect(getPeerSpiffeId(both, JSON_FORMAT).id).toBe(API);
+    expect(codeOf(() => getPeerSpiffeId(both, { ...JSON_FORMAT, requireSingleSan: true }))).toBe(
+      'NOT_ONE_SAN',
+    );
   });
 
   it.each([
+    { format: 'text', maxElements: 0 },
+    { format: 'text', maxElement: 2 },
+    { format: 'text', requireSingleSan: 'yes' },
+    { format: 'text', requireSingleSan: 1 },
+    { format: 'text', require_single_san: true },
+    {},
     null,
-    'yes',
-    [],
-    { requireSingleSan: 1 },
-    { requireSingelSan: true },
-    { format: 'text' },
-  ])('throws TypeError for options %j', (options) => {
+    'json',
+    [1],
+  ])('rejects invalid options %j', (options) => {
     // @ts-expect-error -- deliberately invalid at runtime
-    expect(() => spiffeIdOf(element(API), options)).toThrow(TypeError);
+    expect(codeOf(() => getPeerSpiffeId(undefined, options))).toBe('INVALID_OPTION');
   });
 
-  it('throws TypeError for a requireSingleSan it would otherwise ignore', () => {
+  it('rejects a requireSingleSan it would otherwise ignore', () => {
     class Getter {
+      format = 'text';
       get requireSingleSan() {
         return true;
       }
     }
-    const hidden = {};
+    const hidden = { format: 'text' };
     Object.defineProperty(hidden, 'requireSingleSan', { value: true });
-    const withDns = { ...element(API), dns: ['admin.internal'] };
-    for (const options of [{ __proto__: { requireSingleSan: true } }, new Getter(), hidden]) {
-      expect(() => spiffeIdOf(withDns, options)).toThrow(TypeError);
+    const header = `Hash=${HASH};URI=${API};DNS=admin.internal`;
+    for (const options of [
+      { __proto__: { requireSingleSan: true }, format: 'text' },
+      new Getter(),
+      hidden,
+    ]) {
+      // @ts-expect-error -- deliberately invalid at runtime
+      expect(codeOf(() => getPeerSpiffeId(header, options))).toBe('INVALID_OPTION');
     }
   });
 
   it('accepts a 2048 byte ID', () => {
     const id = `spiffe://td/${'a'.repeat(2048 - 'spiffe://td/'.length)}`;
-    expect(spiffeIdOf(element(id)).id).toBe(id);
+    expect(peerOf(id).id).toBe(id);
   });
 
   it('accepts a 255 byte trust domain', () => {
     const trustDomain = 'a'.repeat(255);
-    expect(spiffeIdOf(element(`spiffe://${trustDomain}/a`)).trustDomain).toBe(trustDomain);
+    expect(peerOf(`spiffe://${trustDomain}/a`).trustDomain).toBe(trustDomain);
   });
 
   it('keeps input out of error messages', () => {
-    const result = safeGetPeerSpiffeId(json(['spiffe://td/secret;x']), { format: 'json' });
-    expect(result.ok).toBe(false);
-    expect(!result.ok && result.error).toBeInstanceOf(SpiffeError);
-    expect(result.ok ? '' : result.error.message).not.toContain('secret');
+    const error = errorOf(() => peerOf('spiffe://td/secret;x'));
+    expect(error).toBeInstanceOf(SpiffeError);
+    expect(error.message).not.toContain('secret');
   });
 });

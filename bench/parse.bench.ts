@@ -6,23 +6,18 @@ import * as xfcc from '../dist/index.mjs';
 import { DN_CASES, HEADER_CASES } from './cases.ts';
 
 // Bind the exports once: reading a module export in the loop adds getter overhead.
-const { parseDistinguishedName, parseXfcc, safeParseXfcc } = xfcc;
+const { parseDistinguishedName, parseXfcc } = xfcc;
 
 describe('parse', () => {
   for (const [name, header, options] of HEADER_CASES) {
     test(name, async ({ bench }) => {
-      await bench.compare(
-        bench('parseXfcc', () => {
-          try {
-            parseXfcc(header, options);
-          } catch {
-            // Measuring the cost of building the XfccError.
-          }
-        }),
-        bench('safeParseXfcc', () => {
-          safeParseXfcc(header, options);
-        }),
-      );
+      await bench('parseXfcc', () => {
+        try {
+          parseXfcc(header, options);
+        } catch {
+          // Measuring the cost of building the XfccError.
+        }
+      }).run();
     });
   }
 });

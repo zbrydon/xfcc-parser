@@ -1,8 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { safeParseXfcc } from '../../dist/index.mjs';
-
-import { ok, urlEncode } from './common.mjs';
+import { ok, safeParseXfcc, urlEncode } from './common.mjs';
 
 /** A DER SEQUENCE around `content`. */
 const der = (content) => {
