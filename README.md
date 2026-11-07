@@ -14,22 +14,44 @@ Node.js >= 22.18.
 
 ## Usage
 
-```ts
-import { parseDistinguishedName, parseXfcc, XfccError } from 'xfcc-parser';
+To know which service is calling, read the caller's SPIFFE ID and look it up in an allow list of exact IDs:
 
-// `format` is required: match it to the Envoy listener. maxElements defaults
-// to 1; set it to the exact number of proxy hops, so a SAN cannot smuggle in an
-// extra element.
-const elements = parseXfcc(request.headers['x-forwarded-client-cert'], {
-  format: 'json',
-  maxElements: 1,
-});
+```ts
+import { getPeerSpiffeId, XfccError } from 'xfcc-parser';
+
+// The exact SPIFFE IDs this service accepts, and who each one is.
+const callers = new Map([
+  ['spiffe://cluster.local/ns/payments/sa/api', 'payments'],
+  ['spiffe://cluster.local/ns/billing/sa/worker', 'billing'],
+]);
+
+let caller: string | undefined;
+try {
+  // `format` must match the Envoy listener. `maxElements` defaults to 1: if more
+  // than one of your proxies appends an element, set it to the exact hop count.
+  const { id } = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
+  caller = callers.get(id);
+} catch (error) {
+  // Every rejected header is an XfccError. A TypeError means the options are wrong.
+  if (!(error instanceof XfccError)) {
+    throw error;
+  }
+}
+if (caller === undefined) {
+  throw new Forbidden();
+}
+```
+
+For an identity that is not a SPIFFE ID, parse the header and check the nearest element yourself:
+
+```ts
+import { parseDistinguishedName, parseXfcc } from 'xfcc-parser';
 
 // The LAST element was appended by the proxy closest to this service. Require
-// exactly one URI SAN: in the text format, two SANs and one crafted SAN can
-// look the same.
-const nearest = elements.at(-1);
-if (nearest?.uri.length !== 1 || nearest.uri[0] !== 'spiffe://cluster.local/ns/payments/sa/api') {
+// exactly one SAN across `uri` and `dns`: in the text format, two SANs and one
+// crafted SAN can look the same.
+const nearest = parseXfcc(request.headers['x-forwarded-client-cert'], { format: 'json' }).at(-1);
+if (nearest?.uri.length !== 0 || nearest.dns.length !== 1 || nearest.dns[0] !== 'api.internal') {
   throw new Forbidden();
 }
 ```
@@ -59,6 +81,29 @@ parseDistinguishedName('CN=evil\\,O=Admin,O=Lyft');
 // ]
 ```
 
+### `getPeerSpiffeId(header, options)`
+
+Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest to this service: the last element of the header. It takes the same arguments as [`parseXfcc`](#parsexfccheader-options), plus `options.requireSingleSan`. If more than one of your proxies appends an element, set `maxElements` to the exact hop count.
+
+```ts
+import { getPeerSpiffeId } from 'xfcc-parser';
+
+const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
+// {
+//   id: 'spiffe://cluster.local/ns/payments/sa/api',
+//   trustDomain: 'cluster.local',
+//   path: '/ns/payments/sa/api',
+//   namespace: 'payments',
+//   serviceAccount: 'api',
+// }
+```
+
+`namespace` and `serviceAccount` are set only when the path is exactly `/ns/<namespace>/sa/<account>`, the Istio layout. For any other mesh, read `path`. They do not identify a caller on their own: the same namespace and service account can exist in every trust domain, so compare `trustDomain` as well, or match on `id`.
+
+It throws `XfccError` with a `code` of `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `NOT_SPIFFE` or `INVALID_SPIFFE_ID` (and no `offset`) if the header has no element, the last element does not have exactly one URI SAN, has any DNS SAN (unless `requireSingleSan` is `false`), or that SAN is not a valid workload SPIFFE ID. A malformed header throws `XfccError` with the header's own code. The ID must follow the [SPIFFE-ID standard][spiffe-id] and be at most 2048 bytes, with a trust domain of at most 255 bytes. The scheme must be lowercase, which is stricter than the standard.
+
+It cannot tell whether a crafted SAN forged the last element (see [Security / trust model](#security--trust-model)), so it is only as safe as the `maxElements` you pass. It does not check `issuer`. `options.requireSingleSan` defaults to `true`, so an element with any DNS SAN is rejected with `NOT_ONE_SAN`: in the text format a URI SAN `spiffe://td/a;DNS=b` is byte-for-byte a certificate with both SANs. Set it to `false` only if your workload certificates also carry DNS SANs. With `false`, that crafted SAN returns `spiffe://td/a`. Unless a crafted SAN forged the element, that is always the part before the first `;` of a SAN your CA signed, so it matters only for a CA that signs URI SANs without checking the SPIFFE ID syntax; behind such a CA, use the JSON format. If a proxy that is not the caller sits between the caller and this service, this returns that proxy's ID. Match the result against an allow list with exact comparisons, on `id` or on `trustDomain` as well as `namespace` and `serviceAccount`.
+
 ### `parseXfcc(header, options)`
 
 Parses a header value and returns a deeply frozen array of elements in header order.
@@ -80,29 +125,6 @@ Parses a header value and returns a deeply frozen array of elements in header or
 | `uri`            | `readonly string[]` | URI SANs of the client certificate. Each is an RFC 3986 URI.                                                                                                      |
 | `dns`            | `readonly string[]` | DNS SANs of the client certificate. A wildcard is allowed only as the whole leftmost label.                                                                       |
 | `issuer`         | `string \| null`    | An RFC 4514 string. Envoy sends `Issuer` from 1.40. Always `null` in the text format (see [Security / trust model](#security--trust-model)); use JSON to read it. |
-
-### `getPeerSpiffeId(header, options)`
-
-Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest to this service: the last element of the header. It takes the same arguments as `parseXfcc`, plus `options.requireSingleSan`. If more than one of your proxies appends an element, set `maxElements` to the exact hop count.
-
-```ts
-import { getPeerSpiffeId } from 'xfcc-parser';
-
-const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
-// {
-//   id: 'spiffe://cluster.local/ns/payments/sa/api',
-//   trustDomain: 'cluster.local',
-//   path: '/ns/payments/sa/api',
-//   namespace: 'payments',
-//   serviceAccount: 'api',
-// }
-```
-
-`namespace` and `serviceAccount` are set only when the path is exactly `/ns/<namespace>/sa/<account>`, the Istio layout. For any other mesh, read `path`.
-
-It throws `XfccError` with a `code` of `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `NOT_SPIFFE` or `INVALID_SPIFFE_ID` (and no `offset`) if the header has no element, the last element does not have exactly one URI SAN, has any DNS SAN (unless `requireSingleSan` is `false`), or that SAN is not a valid workload SPIFFE ID. A malformed header throws `XfccError` with the header's own code. The ID must follow the [SPIFFE-ID standard][spiffe-id] and be at most 2048 bytes, with a trust domain of at most 255 bytes. The scheme must be lowercase, which is stricter than the standard.
-
-It cannot tell whether a crafted SAN forged the last element (see [Security / trust model](#security--trust-model)), so it is only as safe as the `maxElements` you pass. It does not check `issuer`. `options.requireSingleSan` defaults to `true`, so an element with any DNS SAN is rejected with `NOT_ONE_SAN`: in the text format a URI SAN `spiffe://td/a;DNS=b` is byte-for-byte a certificate with both SANs. Set it to `false` only if your workload certificates also carry DNS SANs. With `false`, that crafted SAN returns `spiffe://td/a`. Unless a crafted SAN forged the element, that is always the part before the first `;` of a SAN your CA signed, so it matters only for a CA that signs URI SANs without checking the SPIFFE ID syntax; behind such a CA, use the JSON format. If a proxy that is not the caller sits between the caller and this service, this returns that proxy's ID. Match the result against an allow list with exact comparisons, on `id` or on `trustDomain` as well as `namespace` and `serviceAccount`.
 
 ### `parseDistinguishedName(dn)`
 

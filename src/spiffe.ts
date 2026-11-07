@@ -14,9 +14,17 @@ export interface SpiffeId {
   readonly trustDomain: string;
   /** The path, e.g. `/ns/payments/sa/api`. Always starts with `/`. */
   readonly path: string;
-  /** `payments` when the path is exactly `/ns/<namespace>/sa/<account>` (Istio), else `null`. */
+  /**
+   * `payments` when the path is exactly `/ns/<namespace>/sa/<account>` (Istio),
+   * else `null`. Not unique across trust domains: compare `trustDomain` too, or
+   * match on `id`.
+   */
   readonly namespace: string | null;
-  /** `api` when the path is exactly `/ns/<namespace>/sa/<account>` (Istio), else `null`. */
+  /**
+   * `api` when the path is exactly `/ns/<namespace>/sa/<account>` (Istio), else
+   * `null`. Not unique across trust domains: compare `trustDomain` too, or match
+   * on `id`.
+   */
   readonly serviceAccount: string | null;
 }
 
