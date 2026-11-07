@@ -13,14 +13,7 @@ import {
   urlEncode,
 } from '../test/helpers.ts';
 
-import {
-  MAX_ELEMENTS_LIMIT,
-  MAX_LENGTH_LIMIT,
-  parseDistinguishedName,
-  getPeerSpiffeId,
-  parseXfcc,
-  type XfccErrorCode,
-} from './index.ts';
+import { parseDistinguishedName, getPeerSpiffeId, parseXfcc, type XfccErrorCode } from './index.ts';
 
 const HASH = HASH_A;
 
@@ -38,12 +31,11 @@ describe('package.json', () => {
   });
 });
 
-describe('limits', () => {
-  it('exposes the documented limits', () => {
-    expect(MAX_LENGTH_LIMIT).toBe(1 << 20);
-    expect(MAX_ELEMENTS_LIMIT).toBe(1024);
-  });
+// The documented ceilings.
+const MAX_LENGTH_LIMIT = 1 << 20;
+const MAX_ELEMENTS_LIMIT = 1024;
 
+describe('limits', () => {
   it('defaults maxLength to 64 KiB', () => {
     const atLimit = `Hash=${HASH};URI=a:`.padEnd(64 * 1024, 'a');
     expect(parseXfcc(atLimit, TEXT)).toHaveLength(1);

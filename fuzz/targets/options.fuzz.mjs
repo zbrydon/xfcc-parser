@@ -1,6 +1,8 @@
-import { MAX_ELEMENTS_LIMIT, MAX_LENGTH_LIMIT } from '../../dist/index.mjs';
-
 import { ok, safeParseXfcc } from './common.mjs';
+
+// The documented ceilings of `maxLength` and `maxElements`.
+const MAX_LENGTH_LIMIT = 1 << 20;
+const MAX_ELEMENTS_LIMIT = 1024;
 
 // The first 7 bytes pick the options, the rest is the header. Sizes are reduced
 // so both sides of every limit (including invalid ones) are reachable.

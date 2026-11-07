@@ -8,9 +8,9 @@ export { XfccError, type XfccErrorCode } from './errors.ts';
 export type { DnAttribute } from './dn.ts';
 
 /** Hard ceiling for `maxLength` (1 MiB). */
-export const MAX_LENGTH_LIMIT: number = 1 << 20;
+const MAX_LENGTH_LIMIT = 1 << 20;
 /** Hard ceiling for `maxElements`. */
-export const MAX_ELEMENTS_LIMIT: number = 1024;
+const MAX_ELEMENTS_LIMIT = 1024;
 
 const DEFAULT_MAX_LENGTH = 64 * 1024;
 // One hop, because in the text format a crafted URI SAN can add a forged last
@@ -164,7 +164,7 @@ const joinHeaderLines = (lines: readonly string[]): string => {
  * values before logging or displaying them.
  *
  * @throws {XfccError} with code `INVALID_DN` if `dn` is not valid RFC 4514, or
- *   `TOO_LONG` if it is longer than `MAX_LENGTH_LIMIT` bytes.
+ *   `TOO_LONG` if it is longer than 1 MiB.
  */
 export const parseDistinguishedName = (dn: string): readonly Rdn[] => {
   if (typeof dn !== 'string') {
