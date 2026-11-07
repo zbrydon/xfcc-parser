@@ -16,11 +16,11 @@ assert.throws(() => parseXfcc('Foo=bar', { format: 'text' }), XfccError);
 assert.equal(parseDistinguishedName('CN=a,O=b').length, 2);
 assert.equal(getPeerSpiffeId(`Hash=${hash};URI=spiffe://a/b`, { format: 'text' }).trustDomain, 'a');
 
-// A real certificate and its digest, which goes through `node:crypto` in the bundle.
+// A real certificate, which goes through the PEM and DER checks in the bundle.
 const fixture = (name: string) =>
   readFileSync(new URL(`../test/fixtures/${name}`, import.meta.url), 'utf8');
 const header = `[{"hash":"${fixture('client.sha256').trim()}","cert":${JSON.stringify(fixture('client.pem'))}}]`;
-assert.equal(parseXfcc(header, { format: 'json', requireCertHash: true }).length, 1);
+assert.equal(parseXfcc(header, { format: 'json' })[0]?.cert, fixture('client.pem'));
 assert.throws(
   () => parseXfcc(header.replace(/"hash":"./, '"hash":"x'), { format: 'json' }),
   XfccError,

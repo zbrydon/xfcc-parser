@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto';
+
 import { describe, expect, it } from 'vitest';
 
 import { CA_PEM, CLIENT_PEM, CLIENT_SHA256, urlEncode } from '../test/helpers.ts';
 
-import { parseCertificate, parseCertificates, percentDecode, sha256Hex } from './pem.ts';
+import { parseCertificate, parseCertificates, percentDecode } from './pem.ts';
 
 const BEGIN = '-----BEGIN CERTIFICATE-----';
 const END = '-----END CERTIFICATE-----';
@@ -42,7 +44,7 @@ describe('parseCertificate', () => {
   it('parses one certificate', () => {
     const block = parseCertificate(CLIENT_PEM);
     expect(block?.pem).toBe(CLIENT_PEM);
-    expect(block && sha256Hex(block.der)).toBe(CLIENT_SHA256);
+    expect(block && createHash('sha256').update(block.der).digest('hex')).toBe(CLIENT_SHA256);
   });
 
   it('accepts CRLF, CR and a missing final line break', () => {

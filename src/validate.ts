@@ -198,14 +198,13 @@ export const PARSE_OPTION_KEYS: ReadonlySet<string> = new Set([
   'maxLength',
   'maxElements',
   'format',
-  'requireCertHash',
   'allowTextIssuer',
 ]);
 
 /**
  * Copies the keys of `options` into a null-prototype object, or throws
  * `TypeError` if it cannot without silently dropping an option, which could
- * turn off a check like `requireCertHash`. `options` must be a plain object, from any realm, or
+ * loosen a limit like `maxLength`. `options` must be a plain object, from any realm, or
  * have a `null` prototype: a class getter or parent object would be dropped.
  * A key inherited from a polluted `Object.prototype` is ignored. Every own key
  * must be one of `keys` and enumerable.

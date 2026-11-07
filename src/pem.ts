@@ -1,8 +1,6 @@
 // `Cert` / `Chain` decoding: Envoy-style percent-decoding, strict RFC 7468 PEM,
 // canonical base64 and a DER SEQUENCE framing check. The X.509 contents are
 // deliberately not parsed.
-import { createHash } from 'node:crypto';
-
 import { charTable, hexVal } from './validate.ts';
 
 const BEGIN = '-----BEGIN CERTIFICATE-----';
@@ -176,6 +174,3 @@ export const parseCertificate = (text: string): PemBlock | undefined => {
   const [block, extra] = parseCertificates(text);
   return extra === undefined ? block : undefined;
 };
-
-/** Lowercase hex SHA-256 of `der`, matching Envoy's `Hash`. */
-export const sha256Hex = (der: Buffer): string => createHash('sha256').update(der).digest('hex');

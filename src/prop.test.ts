@@ -211,9 +211,9 @@ describe('round trips', () => {
 describe('arbitrary input', () => {
   it('never throws anything but an XfccError', () => {
     fc.assert(
-      fc.property(fc.string({ unit: 'binary', maxLength: 256 }), fc.boolean(), (input, verify) => {
+      fc.property(fc.string({ unit: 'binary', maxLength: 256 }), (input) => {
         for (const format of ['text', 'json'] as const) {
-          expect(() => parseOrNull(input, { format, requireCertHash: verify })).not.toThrow();
+          expect(() => parseOrNull(input, { format })).not.toThrow();
         }
         expect(() => orNull(() => parseDistinguishedName(input))).not.toThrow();
       }),

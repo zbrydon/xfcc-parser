@@ -59,12 +59,6 @@ export interface ParseOptions {
    */
   readonly format: 'text' | 'json';
   /**
-   * Require `Cert` and `Hash` in every element and check that `Hash` is the
-   * SHA-256 of `Cert`. Defaults to `false`. This does not prove an element is
-   * genuine: a crafted SAN can carry a copy of any public certificate.
-   */
-  readonly requireCertHash?: boolean;
-  /**
    * Return `issuer` from the text format. Defaults to `false`, because a
    * crafted URI SAN `a;Issuer="..."` sets it. Has no effect on JSON.
    */
@@ -90,7 +84,6 @@ interface NormalizedOptions {
   readonly maxLength: number;
   readonly maxElements: number;
   readonly format: 'text' | 'json';
-  readonly requireCertHash: boolean;
   readonly allowTextIssuer: boolean;
 }
 
@@ -99,15 +92,12 @@ interface NormalizedOptions {
 // `TypeError`: an `XfccError` would read as a rejected caller.
 const normalizeOptions = (options: ParseOptions | null | undefined): NormalizedOptions => {
   const own = readOptions(options, PARSE_OPTION_KEYS);
-  const { format, requireCertHash, allowTextIssuer } = own;
+  const { format, allowTextIssuer } = own;
   if (format === undefined) {
     throw new TypeError('format is required');
   }
   if (format !== 'text' && format !== 'json') {
     throw invalidOption('format');
-  }
-  if (requireCertHash !== undefined && typeof requireCertHash !== 'boolean') {
-    throw invalidOption('requireCertHash');
   }
   if (allowTextIssuer !== undefined && typeof allowTextIssuer !== 'boolean') {
     throw invalidOption('allowTextIssuer');
@@ -117,7 +107,6 @@ const normalizeOptions = (options: ParseOptions | null | undefined): NormalizedO
     maxElements:
       checkInteger('maxElements', own.maxElements, MAX_ELEMENTS_LIMIT) ?? DEFAULT_MAX_ELEMENTS,
     format,
-    requireCertHash: requireCertHash ?? false,
     allowTextIssuer: allowTextIssuer ?? false,
   };
 };

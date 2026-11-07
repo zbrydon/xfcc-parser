@@ -17,7 +17,7 @@ const pem = (bytes) => {
 const isAccepted = (header, options) => safeParseXfcc(header, options).ok;
 
 // Random bytes almost never form valid PEM, so build well-formed headers from
-// the input and check the whole Cert / Chain / Hash path accepts them.
+// the input and check the whole Cert / Chain path accepts them.
 export const fuzz = (data) => {
   if (data.length === 0) {
     return;
@@ -39,15 +39,11 @@ export const fuzz = (data) => {
     ['text', textHeader],
     ['json', jsonHeader],
   ]) {
-    const options = { format, requireCertHash: true, maxLength: 1 << 20 };
+    const options = { format, maxLength: 1 << 20 };
     const result = safeParseXfcc(header, options);
     ok(result.ok, `${format}: ${header}`);
     ok(result.value[0].hash === hash);
     ok(result.value[0].cert === leaf);
-
-    // A wrong hash must always be rejected under requireCertHash.
-    const wrong = hash.startsWith('0') ? `1${hash.slice(1)}` : `0${hash.slice(1)}`;
-    ok(!isAccepted(header.replace(hash, wrong), options));
 
     // Near-valid headers must be rejected: a stray control byte, a missing
     // closing delimiter, and (text) a trailing separator or repeated Hash.

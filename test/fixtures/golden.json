@@ -220,8 +220,7 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "allowTextIssuer": true
    },
    "expected": {
     "value": [
@@ -243,8 +242,7 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "allowTextIssuer": true
    },
    "expected": {
     "value": [
@@ -269,12 +267,21 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "allowTextIssuer": true
    },
    "expected": {
-    "code": "HASH_MISMATCH",
-    "offset": 0
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
@@ -282,12 +289,21 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "allowTextIssuer": true
    },
    "expected": {
-    "code": "MISSING_CERT_OR_HASH",
-    "offset": 0
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": null,
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
@@ -295,8 +311,7 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "allowTextIssuer": true
    },
    "expected": {
     "code": "MISSING_HASH",
@@ -308,12 +323,31 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "allowTextIssuer": true
    },
    "expected": {
-    "code": "HASH_MISMATCH",
-    "offset": 873
+    "value": [
+     {
+      "by": [],
+      "hash": "10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     },
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
@@ -2914,8 +2948,7 @@
    "input": "[{\"hash\":\"10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f\",\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\\n-----END CERTIFICATE-----\\n\",\"chain\":[\"-----BEGIN CERTIFICATE-----\\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\\n-----END CERTIFICATE-----\\n\",\"-----BEGIN CERTIFICATE-----\\nMIIBszCCAVmgAwIBAgIUeNLYcgkF8gom0W77O4Ql1b44LmYwCgYIKoZIzj0EAwIw\\nLjELMAkGA1UEBhMCVVMxDTALBgNVBAoMBEx5ZnQxEDAOBgNVBAMMB1Rlc3QgQ0Ew\\nIBcNMjYxMDMwMTA1OTMwWhgPMjEyNjEwMDYxMDU5MzBaMC4xCzAJBgNVBAYTAlVT\\nMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMFkwEwYHKoZIzj0CAQYI\\nKoZIzj0DAQcDQgAET3KVl9XFADczssUZizYA0kcO3OuWtAxAdOhb4tI7JBrFePfq\\n3wtzr3/BMQKglK6P1AOQMB7YmY1PDiiv8X8iYqNTMFEwHQYDVR0OBBYEFO9+zk5N\\n7tXC3m/cMtKvU/97oBYdMB8GA1UdIwQYMBaAFO9+zk5N7tXC3m/cMtKvU/97oBYd\\nMA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSAAwRQIgBSYsSywoJgiCJq4P\\nXEqicMew/oBKdNekMkLWmXYh5JgCIQDnK4v+pH6A1Le8uNslUr9/QroFn2MePH2d\\nxfvKdwB/ng==\\n-----END CERTIFICATE-----\\n\"],\"subject\":\"description=caf\\\\C3\\\\A9,UID=\\\\  #pad\\\\ +CN=evil\\\\,O=Admin,OU=a\\\\\\\"b\\\\\\\\c,O=Lyft,C=US\",\"issuer\":\"CN=Test CA,O=Lyft,C=US\"}]",
    "options": {
     "format": "json",
-    "maxElements": 8,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2939,24 +2972,42 @@
    "input": "[{\"hash\":\"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688\",\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\\n-----END CERTIFICATE-----\\n\"}]",
    "options": {
     "format": "json",
-    "maxElements": 8,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "HASH_MISMATCH",
-    "offset": 1
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
    "input": "[{\"hash\":\"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688\"}]",
    "options": {
     "format": "json",
-    "maxElements": 8,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "MISSING_CERT_OR_HASH",
-    "offset": 1
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": null,
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {

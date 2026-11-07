@@ -1,6 +1,6 @@
 import { parseDn } from './dn.ts';
 import { reject, XfccError } from './errors.ts';
-import { parseCertificate, parseCertificates, percentDecode, sha256Hex } from './pem.ts';
+import { parseCertificate, parseCertificates, percentDecode } from './pem.ts';
 import { validDns, validHash, validUri } from './validate.ts';
 
 import type { XfccElement } from './index.ts';
@@ -22,7 +22,6 @@ export type Key = (typeof KEY)[keyof typeof KEY];
 /** The options the format parsers read. */
 export interface ElementOptions {
   readonly maxElements: number;
-  readonly requireCertHash: boolean;
   readonly allowTextIssuer: boolean;
 }
 
@@ -55,7 +54,6 @@ export class ElementBuilder {
   #hash: string | null = null;
   readonly #by: string[] = [];
   #cert: string | null = null;
-  #certDer: Buffer | null = null;
   readonly #presentedChain: string[] = [];
   #subject: string | null = null;
   readonly #uri: string[] = [];
@@ -144,7 +142,6 @@ export class ElementBuilder {
           throw reject('INVALID_PEM', offset);
         }
         this.#cert = block.pem;
-        this.#certDer = block.der;
         break;
       }
       case KEY.CHAIN:
@@ -170,18 +167,10 @@ export class ElementBuilder {
     }
   }
 
-  /** The frozen element, once the format's and `requireCertHash`'s checks hold. */
+  /** The frozen element, once the format's checks hold. */
   finish(offset: number): XfccElement {
     if (this.#text && this.#hash === null) {
       throw reject('MISSING_HASH', offset);
-    }
-    if (this.#options.requireCertHash) {
-      if (this.#certDer === null || this.#hash === null) {
-        throw reject('MISSING_CERT_OR_HASH', offset);
-      }
-      if (sha256Hex(this.#certDer) !== this.#hash) {
-        throw reject('HASH_MISMATCH', offset);
-      }
     }
     return Object.freeze({
       by: Object.freeze(this.#by),

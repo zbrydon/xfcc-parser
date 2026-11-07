@@ -98,17 +98,11 @@ describe('parseXfcc', () => {
     expect(elements.map((e) => e.by[0])).toEqual(['spiffe://edge', 'spiffe://mesh']);
   });
 
-  it('decodes Cert and Chain and verifies Hash', () => {
+  it('decodes Cert and Chain', () => {
     const header = `Hash=${CLIENT_SHA256};Cert="${urlEncode(CLIENT_PEM)}";Chain="${urlEncode(CLIENT_PEM + CA_PEM)}"`;
-    const options = { format: 'text', requireCertHash: true } as const;
-    const [element] = parseXfcc(header, options);
+    const [element] = parseXfcc(header, TEXT);
     expect(element?.cert).toBe(CLIENT_PEM);
     expect(element?.presentedChain).toEqual([CLIENT_PEM, CA_PEM]);
-
-    expect(codeOf(() => parseXfcc(header.replace(CLIENT_SHA256, HASH), options))).toBe(
-      'HASH_MISMATCH',
-    );
-    expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('MISSING_CERT_OR_HASH');
   });
 
   it('keeps Subject escapes so a forged RDN stays inside its value', () => {
@@ -173,11 +167,11 @@ describe('parseXfcc', () => {
   });
 
   it('rejects options that are not a plain or null-prototype object', () => {
-    const inherited = { __proto__: { requireCertHash: true }, format: 'text' } as const;
+    const inherited = { __proto__: { maxLength: 16 }, format: 'text' } as const;
     class Getter {
       format = 'text';
-      get requireCertHash() {
-        return true;
+      get maxLength() {
+        return 16;
       }
     }
     for (const options of [inherited, new Getter(), [], new Date()]) {
@@ -193,8 +187,8 @@ describe('parseXfcc', () => {
 
   it('rejects a non-enumerable or symbol option key rather than ignoring it', () => {
     const hidden = { format: 'text' } as const;
-    Object.defineProperty(hidden, 'requireCertHash', { value: true });
-    const symbol = { format: 'text', [Symbol('requireCertHash')]: true } as const;
+    Object.defineProperty(hidden, 'maxLength', { value: 16 });
+    const symbol = { format: 'text', [Symbol('maxLength')]: 16 } as const;
     for (const options of [hidden, symbol]) {
       expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
       expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow(TypeError);
@@ -208,7 +202,7 @@ describe('parseXfcc', () => {
     // @ts-expect-error -- typed unknown, a plain object at runtime
     expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow('NOT_ONE_URI');
     // A null-prototype parent that holds an option is not a realm's Object.prototype.
-    const parent = Object.defineProperty({ __proto__: null }, 'requireCertHash', { value: true });
+    const parent = Object.defineProperty({ __proto__: null }, 'maxLength', { value: 1 << 20 });
     const forged = { __proto__: parent, format: 'text' } as const;
     expect(() => parseXfcc(`Hash=${HASH}`, forged)).toThrow(TypeError);
   });
@@ -292,9 +286,8 @@ describe('parseXfcc', () => {
     ['[{"subject":""}]', 'EMPTY_VALUE', 12],
     ['[{"dns": [ ]}]', 'EMPTY_VALUE', 9],
     ['[ ]', 'EMPTY', 0],
-    ['[ {"by":["a:b"]}]', 'MISSING_CERT_OR_HASH', 2],
   ])('reports the offset of JSON error %j', (header, expected, offset) => {
-    const error = errorOf(() => parseXfcc(header, { format: 'json', requireCertHash: true }));
+    const error = errorOf(() => parseXfcc(header, JSON_FORMAT));
     expect(error.code).toBe(expected);
     expect(error.offset).toBe(offset);
     expect(error.message).toContain(`(at byte ${offset})`);

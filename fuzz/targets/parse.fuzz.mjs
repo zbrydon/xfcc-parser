@@ -8,14 +8,8 @@ const DN_CHARS = /^[\x20-\x7e]*$/;
 export const fuzz = (data) => {
   const input = text(data);
   for (const format of ['text', 'json']) {
-    for (const requireCertHash of [false, true]) {
-      const allowTextIssuer = requireCertHash;
-      const result = safeParseXfcc(input, {
-        format,
-        requireCertHash,
-        maxElements: 8,
-        allowTextIssuer,
-      });
+    for (const allowTextIssuer of [false, true]) {
+      const result = safeParseXfcc(input, { format, maxElements: 8, allowTextIssuer });
       if (!result.ok) {
         // The options are valid, so every error is about input and has an offset.
         ok(result.error instanceof XfccError);
@@ -26,7 +20,6 @@ export const fuzz = (data) => {
       for (const element of result.value) {
         ok(element.hash === null || HASH.test(element.hash));
         ok(format === 'json' || element.hash !== null);
-        ok(!requireCertHash || (element.hash !== null && element.cert !== null));
         ok(allowTextIssuer || format === 'json' || element.issuer === null);
         // Anything accepted must also have parseable, plain-ASCII DNs.
         for (const dn of [element.subject, element.issuer]) {

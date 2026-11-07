@@ -67,7 +67,6 @@ Parses a header value and returns a deeply frozen array of elements in header or
 - `options.maxLength`: the maximum length in bytes. Defaults to `65536`, up to `1048576`. It is checked before anything else.
 - `options.format` (required): `'text'` or `'json'`. Set it to match the Envoy listener's [`set_current_client_cert_details.format`][set-current]. The format is never detected from the value, because a text header can be crafted to look like JSON: the leading `[` can come from a client-forwarded prefix and the trailing `]` from a URI SAN.
 - `options.maxElements`: the maximum number of elements (proxy hops). Defaults to `1`, up to `1024`. If more than one of your proxies appends an element, set it to the exact hop count: in the text format, a crafted SAN can add a forged last element.
-- `options.requireCertHash`: when `true`, every element must have both `Cert` and `Hash`, and `Hash` must equal the SHA-256 of `Cert`'s DER. Defaults to `false`. This proves only that `Hash` and `Cert` in the same element agree, not that your proxy wrote the element.
 - `options.allowTextIssuer`: when `true`, return `issuer` from the text format. Defaults to `false`, so `issuer` is always `null` in the text format: a crafted URI SAN `a;Issuer="..."` is byte-for-byte a real `Issuer` pair. `Issuer` is still validated either way. Has no effect on the JSON format.
 
 `options` must be a plain object (from any realm, or with a `null` prototype) with `format` set. An unknown key, such as a misspelt `maxElement`, throws `TypeError` rather than being ignored, and so does a non-enumerable or symbol key. A polluted `Object.prototype` cannot change a default, and any other prototype, such as a class instance, throws `TypeError` rather than having its inherited options ignored.
@@ -90,11 +89,7 @@ Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest to th
 ```ts
 import { getPeerSpiffeId } from 'xfcc-parser';
 
-// Forward Cert from the nearest proxy so requireCertHash can be used.
-const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], {
-  format: 'json',
-  requireCertHash: true,
-});
+const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
 // {
 //   id: 'spiffe://cluster.local/ns/payments/sa/api',
 //   trustDomain: 'cluster.local',
@@ -116,9 +111,9 @@ Parses an RFC 4514 distinguished name into RDNs, in string order. That is the mo
 
 ### Errors
 
-Every function throws `XfccError`, which has a stable `code` and the byte `offset` where the problem was found (`getPeerSpiffeId`'s own codes have none). For `INVALID_JSON`, that is the first offending byte; for an invalid JSON value, the value's opening quote or bracket; for an element-level error such as `MISSING_CERT_OR_HASH`, the start of the element; for `TOO_LONG`, the limit, which is the first byte past it. A surplus JSON element reports `TOO_MANY_ELEMENTS` without being validated. Messages never include the input, so they are safe to log. An `XfccError` has no stack trace: capturing one dominates the cost of rejecting a header, and it says nothing about untrusted input. Codes:
+Every function throws `XfccError`, which has a stable `code` and the byte `offset` where the problem was found (`getPeerSpiffeId`'s own codes have none). For `INVALID_JSON`, that is the first offending byte; for an invalid JSON value, the value's opening quote or bracket; for an element-level error such as `MISSING_HASH`, the start of the element; for `TOO_LONG`, the limit, which is the first byte past it. A surplus JSON element reports `TOO_MANY_ELEMENTS` without being validated. Messages never include the input, so they are safe to log. An `XfccError` has no stack trace: capturing one dominates the cost of rejecting a header, and it says nothing about untrusted input. Codes:
 
-`EMPTY`, `TOO_LONG`, `TOO_MANY_ELEMENTS`, `INVALID_CHAR`, `EMPTY_ELEMENT`, `EMPTY_PAIR`, `MISSING_EQUALS`, `UNKNOWN_KEY`, `DUPLICATE_KEY`, `EMPTY_VALUE`, `UNTERMINATED_QUOTE`, `UNEXPECTED_AFTER_VALUE`, `INVALID_QUOTING`, `INVALID_ESCAPE`, `INVALID_HASH`, `INVALID_URI`, `INVALID_DNS`, `INVALID_PERCENT_ENCODING`, `INVALID_PEM`, `INVALID_DN`, `KEY_ORDER`, `MISSING_HASH`, `MISSING_CERT_OR_HASH`, `HASH_MISMATCH`, `INVALID_JSON`, `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `NOT_SPIFFE`, `INVALID_SPIFFE_ID`.
+`EMPTY`, `TOO_LONG`, `TOO_MANY_ELEMENTS`, `INVALID_CHAR`, `EMPTY_ELEMENT`, `EMPTY_PAIR`, `MISSING_EQUALS`, `UNKNOWN_KEY`, `DUPLICATE_KEY`, `EMPTY_VALUE`, `UNTERMINATED_QUOTE`, `UNEXPECTED_AFTER_VALUE`, `INVALID_QUOTING`, `INVALID_ESCAPE`, `INVALID_HASH`, `INVALID_URI`, `INVALID_DNS`, `INVALID_PERCENT_ENCODING`, `INVALID_PEM`, `INVALID_DN`, `KEY_ORDER`, `MISSING_HASH`, `INVALID_JSON`, `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `NOT_SPIFFE`, `INVALID_SPIFFE_ID`.
 
 A wrong argument type or an invalid option throws `TypeError`, not `XfccError`: it is a bug in the caller, not a rejected header.
 
@@ -132,14 +127,14 @@ XFCC is only as trustworthy as the proxies that set it. Check all of the followi
 - **Do not authorize on `presentedChain`.** Envoy forwards the chain the client presented, not the chain it validated.
 - **Prefer the JSON format** (`set_current_client_cert_details.format: JSON`, Envoy 1.38 and later), and pass `format: 'json'`. In the text format Envoy writes `By`, `URI` and `DNS` values unescaped, and `,`, `;` and `=` are legal in a URI. So a CA that will sign a crafted SAN lets its holder add identities:
   - A URI SAN `spiffe://td/x;URI=spiffe://td/admin` is byte-for-byte the same as two URI SANs, and a DNS SAN `a.com;DNS=admin.internal` the same as two DNS SANs. A URI SAN `https://x.example/;DNS=admin.internal` is the same as a URI SAN plus a DNS SAN, and `…;Issuer="CN=Trusted CA"` sets `issuer`. No parser can tell these apart, so require exactly one SAN across `uri` and `dns` combined (`getPeerSpiffeId` does this by default). For the same reason `issuer` is `null` in the text format unless you set `allowTextIssuer`; do not authorize on it if you do.
-  - A URI SAN `https://x.example/a,By=…;Hash=…;URI=spiffe://td/admin` adds a forged last element. `maxElements` defaults to `1`; if you raise it, set it to the exact hop count. `requireCertHash` does not stop it: a SAN containing `"` can carry a quoted copy of any public certificate and its hash.
+  - A URI SAN `https://x.example/a,By=…;Hash=…;URI=spiffe://td/admin` adds a forged last element. `maxElements` defaults to `1`; if you raise it, set it to the exact hop count.
   - SPIFFE IDs cannot contain `;` or `,`, so a CA that enforces the SPIFFE ID syntax (such as SPIRE) never issues these SANs as SPIFFE IDs. It may still issue them in a non-SPIFFE URI SAN, such as the `https:` one above.
-- **In the JSON format, keep `SANITIZE_SET` at the edge.** With `APPEND_FORWARD`, Envoy appends in the text format when the incoming header is not a bracketed JSON array. A client-forwarded prefix plus a crafted SAN can then wrap Envoy's text in a JSON string. The parser rejects any `by` or `uri` value containing `Hash=` for this reason, and forwarding `Cert` with `requireCertHash` also breaks the shape.
+- **In the JSON format, keep `SANITIZE_SET` at the edge.** With `APPEND_FORWARD`, Envoy appends in the text format when the incoming header is not a bracketed JSON array. A client-forwarded prefix plus a crafted SAN can then wrap Envoy's text in a JSON string. The parser rejects any `by` or `uri` value containing `Hash=` for this reason.
 - **Match on parsed values.** Compare `uri`/`dns` entries exactly, and read DN attributes with `parseDistinguishedName`. Never use substring or regex matches on `subject`.
 
 What the parser enforces, in addition to the format grammar:
 
-- **Keys and quoting:** only the eight keys Envoy defines (case-insensitive). `Hash`, `Cert`, `Chain`, `Subject` and `Issuer` may appear at most once per element. In the text format, quoting must match Envoy's: `Cert`, `Chain`, `Subject` and `Issuer` are always quoted, and `By`, `Hash`, `URI` and `DNS` never are. Also in the text format, keys must appear in the order Envoy writes them (`By`, `Hash`, `Cert`, `Chain`, `Subject`, `URI`, `DNS`, `Issuer`; `By`, `URI` and `DNS` may repeat), and every element must have a `Hash`. Together these reject a SAN that reorders keys, starts an element without a `Hash` or writes a `Cert`. They cannot reject the cases listed under "Prefer the JSON format" above. A JSON element may omit `hash`, because Envoy JSON-escapes SANs, so a SAN cannot add a JSON element; set `requireCertHash` to require it.
+- **Keys and quoting:** only the eight keys Envoy defines (case-insensitive). `Hash`, `Cert`, `Chain`, `Subject` and `Issuer` may appear at most once per element. In the text format, quoting must match Envoy's: `Cert`, `Chain`, `Subject` and `Issuer` are always quoted, and `By`, `Hash`, `URI` and `DNS` never are. Also in the text format, keys must appear in the order Envoy writes them (`By`, `Hash`, `Cert`, `Chain`, `Subject`, `URI`, `DNS`, `Issuer`; `By`, `URI` and `DNS` may repeat), and every element must have a `Hash`. Together these reject a SAN that reorders keys, starts an element without a `Hash` or writes a `Cert`. They cannot reject the cases listed under "Prefer the JSON format" above. A JSON element may omit `hash`, because Envoy JSON-escapes SANs, so a SAN cannot add a JSON element.
 - **Characters:** only visible ASCII, SP and HTAB are accepted. Control characters, `obs-text` and non-ASCII are rejected. `Subject` and `Issuer` also reject a raw tab, and in JSON any control or non-ASCII character (Envoy JSON-escapes control characters, and escapes every non-ASCII byte in a DN as `\XX`), so the `subject` and `issuer` strings cannot reach logs unescaped. Values decoded by `parseDistinguishedName` can.
 - **Value validation:** URIs must be RFC 3986 URIs with the non-empty scheme-specific-part RFC 5280 requires, so `urn:` is rejected. In the JSON format, a `by` or `uri` value containing `Hash=` is rejected with `INVALID_URI`. DNS names must be LDH hostnames ([RFC 1034][rfc1034], [RFC 1123][rfc1123], [RFC 5280][rfc5280]) whose last label is not all-numeric, so `1.2.3.4` is rejected. Hashes must be 64 lowercase hex characters. `Cert`/`Chain` use Envoy's percent-encoding (`+` is never treated as a space), followed by RFC 7468 PEM, canonical base64 and a DER framing check. The body must follow the strict grammar (64-character lines, then one shorter line), but trailing whitespace after the `BEGIN`/`END` lines and a missing final line break are accepted, as RFC 7468 parsers should.
 - **DN escapes:** RFC 4514 escapes inside `Subject`/`Issuer` are kept exactly as sent, so `CN=a\,O=Admin` can never be read as two RDNs.
@@ -151,6 +146,7 @@ Deliberate deviations and limits:
 - **Empty elements:** [RFC 9110][rfc9110-lists] says recipients of a comma-separated list must ignore empty elements. Envoy never writes them, so `a,,b` and a trailing comma are rejected with `EMPTY_ELEMENT`.
 - **DN separators:** the obsolete [RFC 2253][rfc2253] `;` separator is rejected.
 - **NUL:** a DN value that decodes to U+0000 is rejected.
+- **`Hash` is not compared with `Cert`:** Envoy always writes them consistently, and anyone who can forge an element (see above) can include any public certificate with its correct hash, so a match would prove nothing.
 - **Certificate contents:** X.509 contents are not parsed. If you need more than the fields above, pass `cert` to `node:crypto`'s `X509Certificate`.
 - **Envoy's documentation example:** the second JSON example in Envoy's docs abbreviates the SHA-256 digests to 32 hex characters, and this parser rejects it. Real Envoy output always has 64.
 

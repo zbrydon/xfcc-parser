@@ -24,8 +24,6 @@ const MESSAGES = {
   INVALID_DN: 'value is not an RFC 4514 distinguished name',
   KEY_ORDER: 'keys are not in the order Envoy writes them',
   MISSING_HASH: 'element has no Hash',
-  MISSING_CERT_OR_HASH: 'requireCertHash requires both Cert and Hash in every element',
-  HASH_MISMATCH: 'SHA-256 of Cert does not match Hash',
   INVALID_JSON: 'invalid JSON-format XFCC value',
 } as const;
 
