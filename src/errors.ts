@@ -29,11 +29,9 @@ const MESSAGES = {
   INVALID_JSON: 'invalid JSON-format XFCC value',
 } as const;
 
-// These have no offset, and no fixed message: `INVALID_OPTION` names the
-// option, and the rest are `getPeerSpiffeId`'s checks of a parsed element.
+// `getPeerSpiffeId`'s checks of a parsed element, which have no offset.
 export type XfccErrorCode =
   | keyof typeof MESSAGES
-  | 'INVALID_OPTION'
   | 'NO_PEER'
   | 'NOT_ONE_URI'
   | 'NOT_ONE_SAN'
@@ -50,7 +48,7 @@ export class XfccError extends Error {
   readonly code: XfccErrorCode;
   /**
    * Byte offset into the input where the problem was found. Unset for
-   * `INVALID_OPTION` and for `getPeerSpiffeId`'s own codes.
+   * `getPeerSpiffeId`'s own codes.
    */
   readonly offset: number | undefined;
 

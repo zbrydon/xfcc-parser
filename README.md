@@ -70,7 +70,7 @@ Parses a header value and returns a deeply frozen array of elements in header or
 - `options.requireCertHash`: when `true`, every element must have both `Cert` and `Hash`, and `Hash` must equal the SHA-256 of `Cert`'s DER. Defaults to `false`. This proves only that `Hash` and `Cert` in the same element agree, not that your proxy wrote the element.
 - `options.allowTextIssuer`: when `true`, return `issuer` from the text format. Defaults to `false`, so `issuer` is always `null` in the text format: a crafted URI SAN `a;Issuer="..."` is byte-for-byte a real `Issuer` pair. `Issuer` is still validated either way. Has no effect on the JSON format.
 
-`options` must be a plain object (from any realm, or with a `null` prototype) with `format` set. An unknown key, such as a misspelt `maxElement`, is rejected with `INVALID_OPTION` rather than ignored, and so is a non-enumerable or symbol key. A polluted `Object.prototype` cannot change a default, and any other prototype, such as a class instance, is rejected with `INVALID_OPTION` rather than having its inherited options ignored.
+`options` must be a plain object (from any realm, or with a `null` prototype) with `format` set. An unknown key, such as a misspelt `maxElement`, throws `TypeError` rather than being ignored, and so does a non-enumerable or symbol key. A polluted `Object.prototype` cannot change a default, and any other prototype, such as a class instance, throws `TypeError` rather than having its inherited options ignored.
 
 | Field            | Type                | Notes                                                                                                                 |
 | ---------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -116,11 +116,11 @@ Parses an RFC 4514 distinguished name into RDNs, in string order. That is the mo
 
 ### Errors
 
-Every function throws `XfccError`, which has a stable `code` and the byte `offset` where the problem was found (`INVALID_OPTION` and `getPeerSpiffeId`'s own codes have none). For `INVALID_JSON`, that is the first offending byte; for an invalid JSON value, the value's opening quote or bracket; for an element-level error such as `MISSING_CERT_OR_HASH`, the start of the element; for `TOO_LONG`, the limit, which is the first byte past it. A surplus JSON element reports `TOO_MANY_ELEMENTS` without being validated. Messages never include the input, so they are safe to log. An `XfccError` has no stack trace: capturing one dominates the cost of rejecting a header, and it says nothing about untrusted input. Codes:
+Every function throws `XfccError`, which has a stable `code` and the byte `offset` where the problem was found (`getPeerSpiffeId`'s own codes have none). For `INVALID_JSON`, that is the first offending byte; for an invalid JSON value, the value's opening quote or bracket; for an element-level error such as `MISSING_CERT_OR_HASH`, the start of the element; for `TOO_LONG`, the limit, which is the first byte past it. A surplus JSON element reports `TOO_MANY_ELEMENTS` without being validated. Messages never include the input, so they are safe to log. An `XfccError` has no stack trace: capturing one dominates the cost of rejecting a header, and it says nothing about untrusted input. Codes:
 
-`INVALID_OPTION`, `EMPTY`, `TOO_LONG`, `TOO_MANY_ELEMENTS`, `INVALID_CHAR`, `EMPTY_ELEMENT`, `EMPTY_PAIR`, `MISSING_EQUALS`, `UNKNOWN_KEY`, `DUPLICATE_KEY`, `EMPTY_VALUE`, `UNTERMINATED_QUOTE`, `UNEXPECTED_AFTER_VALUE`, `INVALID_QUOTING`, `INVALID_ESCAPE`, `INVALID_HASH`, `INVALID_URI`, `INVALID_DNS`, `INVALID_PERCENT_ENCODING`, `INVALID_PEM`, `INVALID_DN`, `KEY_ORDER`, `MISSING_HASH`, `MISSING_CERT_OR_HASH`, `HASH_MISMATCH`, `INVALID_JSON`, `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `NOT_SPIFFE`, `INVALID_SPIFFE_ID`.
+`EMPTY`, `TOO_LONG`, `TOO_MANY_ELEMENTS`, `INVALID_CHAR`, `EMPTY_ELEMENT`, `EMPTY_PAIR`, `MISSING_EQUALS`, `UNKNOWN_KEY`, `DUPLICATE_KEY`, `EMPTY_VALUE`, `UNTERMINATED_QUOTE`, `UNEXPECTED_AFTER_VALUE`, `INVALID_QUOTING`, `INVALID_ESCAPE`, `INVALID_HASH`, `INVALID_URI`, `INVALID_DNS`, `INVALID_PERCENT_ENCODING`, `INVALID_PEM`, `INVALID_DN`, `KEY_ORDER`, `MISSING_HASH`, `MISSING_CERT_OR_HASH`, `HASH_MISMATCH`, `INVALID_JSON`, `NO_PEER`, `NOT_ONE_URI`, `NOT_ONE_SAN`, `NOT_SPIFFE`, `INVALID_SPIFFE_ID`.
 
-A wrong argument type throws a `TypeError`.
+A wrong argument type or an invalid option throws `TypeError`, not `XfccError`: it is a bug in the caller, not a rejected header.
 
 ## Security / trust model
 

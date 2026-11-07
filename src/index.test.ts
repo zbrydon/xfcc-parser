@@ -149,9 +149,9 @@ describe('parseXfcc', () => {
     'requires format with options %j',
     (options) => {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(undefined, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(undefined, options)).toThrow(TypeError);
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
     },
   );
 
@@ -160,7 +160,7 @@ describe('parseXfcc', () => {
     Object.assign(Object.prototype, inherited);
     try {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, {}))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, {})).toThrow(TypeError);
       const twoHops = `Hash=${HASH};URI=spiffe://td/a,Hash=${HASH};URI=spiffe://td/b`;
       expect(codeOf(() => parseXfcc(twoHops, { format: 'text' }))).toBe('TOO_MANY_ELEMENTS');
       expect(codeOf(() => getPeerSpiffeId(twoHops, { format: 'text' }))).toBe('TOO_MANY_ELEMENTS');
@@ -182,9 +182,9 @@ describe('parseXfcc', () => {
     }
     for (const options of [inherited, new Getter(), [], new Date()]) {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => getPeerSpiffeId(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow(TypeError);
     }
     const bare = { __proto__: null, format: 'text' } as const;
     expect(parseXfcc(`Hash=${HASH}`, bare)[0]?.hash).toBe(HASH);
@@ -196,8 +196,8 @@ describe('parseXfcc', () => {
     Object.defineProperty(hidden, 'requireCertHash', { value: true });
     const symbol = { format: 'text', [Symbol('requireCertHash')]: true } as const;
     for (const options of [hidden, symbol]) {
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
-      expect(codeOf(() => getPeerSpiffeId(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
+      expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow(TypeError);
     }
   });
 
@@ -210,7 +210,7 @@ describe('parseXfcc', () => {
     // A null-prototype parent that holds an option is not a realm's Object.prototype.
     const parent = Object.defineProperty({ __proto__: null }, 'requireCertHash', { value: true });
     const forged = { __proto__: parent, format: 'text' } as const;
-    expect(codeOf(() => parseXfcc(`Hash=${HASH}`, forged))).toBe('INVALID_OPTION');
+    expect(() => parseXfcc(`Hash=${HASH}`, forged)).toThrow(TypeError);
   });
 
   it('still returns errors when Error.stackTraceLimit is read-only', () => {
@@ -350,18 +350,16 @@ describe('parseXfcc', () => {
     { require_cert_hash: true },
   ])('rejects invalid option %j', (option) => {
     // @ts-expect-error -- deliberately invalid at runtime
-    expect(codeOf(() => parseXfcc('URI=a:', { format: 'text', ...option }))).toBe('INVALID_OPTION');
+    expect(() => parseXfcc('URI=a:', { format: 'text', ...option })).toThrow(TypeError);
   });
 
   it.each(['text', 1, []])('rejects non-object options %j', (options) => {
     // @ts-expect-error -- deliberately invalid at runtime
-    expect(codeOf(() => parseXfcc('URI=a:', options))).toBe('INVALID_OPTION');
+    expect(() => parseXfcc('URI=a:', options)).toThrow(TypeError);
   });
 
   it('validates options even when the header is absent', () => {
-    expect(codeOf(() => parseXfcc(undefined, { format: 'text', maxLength: 0 }))).toBe(
-      'INVALID_OPTION',
-    );
+    expect(() => parseXfcc(undefined, { format: 'text', maxLength: 0 })).toThrow(TypeError);
   });
 
   it.each([42, null, {}, [1], ['a', 2]])('throws TypeError for header %j', (header) => {

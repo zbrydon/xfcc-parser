@@ -24,15 +24,19 @@ export const fuzz = (data) => {
     options.maxElements >= 1 &&
     options.maxElements <= MAX_ELEMENTS_LIMIT;
   const bytes = Buffer.byteLength(input);
-  const result = safeParseXfcc(input, options);
+  let result;
+  try {
+    result = safeParseXfcc(input, options);
+  } catch (error) {
+    // An invalid option is a caller bug, so it throws TypeError, never XfccError.
+    ok(error instanceof TypeError && !valid);
+    return;
+  }
+  ok(valid);
   if (result.ok) {
-    ok(valid);
     ok(bytes <= options.maxLength);
     ok(result.value.length >= 1 && result.value.length <= options.maxElements);
-  } else {
-    ok((result.error.code === 'INVALID_OPTION') === !valid);
-    if (valid && bytes > options.maxLength) {
-      ok(result.error.code === 'TOO_LONG');
-    }
+  } else if (bytes > options.maxLength) {
+    ok(result.error.code === 'TOO_LONG');
   }
 };

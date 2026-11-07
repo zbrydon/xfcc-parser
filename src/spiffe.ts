@@ -86,18 +86,15 @@ const readSpiffeId = (element: XfccElement, requireSingleSan: boolean): SpiffeId
  *
  * @throws {XfccError} if the header is malformed, has no element, or its last
  *   element does not carry exactly one valid SPIFFE ID.
+ * @throws {TypeError} if `options` or the type of `header` is invalid.
  */
 export const getPeerSpiffeId = (
   header: string | readonly string[] | undefined,
   options: PeerSpiffeIdOptions,
 ): SpiffeId => {
-  const own = readOptions(options, PEER_KEYS);
-  if (typeof own === 'string') {
-    throw new XfccError('INVALID_OPTION', own);
-  }
-  const { requireSingleSan = false, ...parseOptions } = own;
+  const { requireSingleSan = false, ...parseOptions } = readOptions(options, PEER_KEYS);
   if (typeof requireSingleSan !== 'boolean') {
-    throw new XfccError('INVALID_OPTION', 'requireSingleSan is out of range');
+    throw new TypeError('requireSingleSan is out of range');
   }
   // The LAST element was appended by the proxy closest to this service.
   const nearest = parseXfcc(header, parseOptions).at(-1);

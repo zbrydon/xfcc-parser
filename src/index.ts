@@ -1,5 +1,5 @@
 import { parseDn, type DnAttribute } from './dn.ts';
-import { reject, XfccError } from './errors.ts';
+import { reject } from './errors.ts';
 import { parseJson } from './json.ts';
 import { parseText } from './text.ts';
 import { PARSE_OPTION_KEYS, readOptions } from './validate.ts';
@@ -74,19 +74,14 @@ export interface ParseOptions {
 /** A relative distinguished name: one or more attributes joined by `+`. */
 export type Rdn = readonly DnAttribute[];
 
-const invalidOption = (name: string): XfccError =>
-  new XfccError('INVALID_OPTION', `${name} is out of range`);
+const invalidOption = (name: string): TypeError => new TypeError(`${name} is out of range`);
 
-const checkInteger = (
-  name: string,
-  value: unknown,
-  max: number,
-): number | undefined | XfccError => {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > max) {
-    return invalidOption(name);
+const checkInteger = (name: string, value: unknown, max: number): number | undefined => {
+  if (
+    value !== undefined &&
+    (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > max)
+  ) {
+    throw invalidOption(name);
   }
   return value;
 };
@@ -100,37 +95,27 @@ interface NormalizedOptions {
 }
 
 // Plain JavaScript can omit `options`, which then fails like any invalid one.
-const normalizeOptions = (
-  options: ParseOptions | null | undefined,
-): NormalizedOptions | XfccError => {
+// An invalid option is a bug in the caller, not untrusted input, so it throws
+// `TypeError`: an `XfccError` would read as a rejected caller.
+const normalizeOptions = (options: ParseOptions | null | undefined): NormalizedOptions => {
   const own = readOptions(options, PARSE_OPTION_KEYS);
-  if (typeof own === 'string') {
-    return new XfccError('INVALID_OPTION', own);
-  }
   const { format, requireCertHash, allowTextIssuer } = own;
   if (format === undefined) {
-    return new XfccError('INVALID_OPTION', 'format is required');
+    throw new TypeError('format is required');
   }
   if (format !== 'text' && format !== 'json') {
-    return invalidOption('format');
+    throw invalidOption('format');
   }
   if (requireCertHash !== undefined && typeof requireCertHash !== 'boolean') {
-    return invalidOption('requireCertHash');
+    throw invalidOption('requireCertHash');
   }
   if (allowTextIssuer !== undefined && typeof allowTextIssuer !== 'boolean') {
-    return invalidOption('allowTextIssuer');
-  }
-  const maxLength = checkInteger('maxLength', own.maxLength, MAX_LENGTH_LIMIT);
-  if (maxLength instanceof XfccError) {
-    return maxLength;
-  }
-  const maxElements = checkInteger('maxElements', own.maxElements, MAX_ELEMENTS_LIMIT);
-  if (maxElements instanceof XfccError) {
-    return maxElements;
+    throw invalidOption('allowTextIssuer');
   }
   return {
-    maxLength: maxLength ?? DEFAULT_MAX_LENGTH,
-    maxElements: maxElements ?? DEFAULT_MAX_ELEMENTS,
+    maxLength: checkInteger('maxLength', own.maxLength, MAX_LENGTH_LIMIT) ?? DEFAULT_MAX_LENGTH,
+    maxElements:
+      checkInteger('maxElements', own.maxElements, MAX_ELEMENTS_LIMIT) ?? DEFAULT_MAX_ELEMENTS,
     format,
     requireCertHash: requireCertHash ?? false,
     allowTextIssuer: allowTextIssuer ?? false,
@@ -169,15 +154,13 @@ const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] =
  *   An array (multiple header lines) is joined with `,` per RFC 9110.
  * @param options `format` is required. `maxElements` defaults to 1.
  * @throws {XfccError} if the header is malformed in any way.
+ * @throws {TypeError} if `options` or the type of `header` is invalid.
  */
 export const parseXfcc = (
   header: string | readonly string[] | undefined,
   options: ParseOptions,
 ): readonly XfccElement[] => {
   const normalized = normalizeOptions(options);
-  if (normalized instanceof XfccError) {
-    throw normalized;
-  }
   if (header === undefined) {
     return Object.freeze([]);
   }

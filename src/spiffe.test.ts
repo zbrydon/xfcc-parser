@@ -68,9 +68,7 @@ describe('getPeerSpiffeId', () => {
     'requires format with options %j',
     (options) => {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => getPeerSpiffeId(`Hash=${HASH};URI=${API}`, options))).toBe(
-        'INVALID_OPTION',
-      );
+      expect(() => getPeerSpiffeId(`Hash=${HASH};URI=${API}`, options)).toThrow(TypeError);
     },
   );
 
@@ -195,7 +193,7 @@ describe('SPIFFE ID validation', () => {
     [1],
   ])('rejects invalid options %j', (options) => {
     // @ts-expect-error -- deliberately invalid at runtime
-    expect(codeOf(() => getPeerSpiffeId(undefined, options))).toBe('INVALID_OPTION');
+    expect(() => getPeerSpiffeId(undefined, options)).toThrow(TypeError);
   });
 
   it('rejects a requireSingleSan it would otherwise ignore', () => {
@@ -214,7 +212,7 @@ describe('SPIFFE ID validation', () => {
       hidden,
     ]) {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => getPeerSpiffeId(header, options))).toBe('INVALID_OPTION');
+      expect(() => getPeerSpiffeId(header, options)).toThrow(TypeError);
     }
   });
 

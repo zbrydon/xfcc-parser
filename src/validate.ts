@@ -203,9 +203,9 @@ export const PARSE_OPTION_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Copies the keys of `options` into a null-prototype object, or returns why it
- * cannot without silently dropping an option, which could turn off a check
- * like `requireCertHash`. `options` must be a plain object, from any realm, or
+ * Copies the keys of `options` into a null-prototype object, or throws
+ * `TypeError` if it cannot without silently dropping an option, which could
+ * turn off a check like `requireCertHash`. `options` must be a plain object, from any realm, or
  * have a `null` prototype: a class getter or parent object would be dropped.
  * A key inherited from a polluted `Object.prototype` is ignored. Every own key
  * must be one of `keys` and enumerable.
@@ -213,9 +213,9 @@ export const PARSE_OPTION_KEYS: ReadonlySet<string> = new Set([
 export const readOptions = <T extends object>(
   options: T | null | undefined,
   keys: ReadonlySet<string>,
-): T | string => {
+): T => {
   if (typeof options !== 'object' || options === null) {
-    return 'options must be a plain object';
+    throw new TypeError('options must be a plain object');
   }
   const proto = Reflect.getPrototypeOf(options);
   // Another realm's `Object.prototype` has a null prototype too. One that
@@ -225,13 +225,13 @@ export const readOptions = <T extends object>(
     proto === Object.prototype ||
     (Reflect.getPrototypeOf(proto) === null && ![...keys].some((key) => Object.hasOwn(proto, key)));
   if (!plain) {
-    return 'options must be a plain object';
+    throw new TypeError('options must be a plain object');
   }
   // `Reflect.ownKeys` also lists symbols and non-enumerable keys, which the
   // spread below would drop.
   const own = Object.keys(options);
   if (Reflect.ownKeys(options).length !== own.length || !own.every((key) => keys.has(key))) {
-    return 'options has an unknown or non-enumerable key';
+    throw new TypeError('options has an unknown or non-enumerable key');
   }
   return { __proto__: null, ...options };
 };
