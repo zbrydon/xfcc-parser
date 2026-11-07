@@ -31,9 +31,9 @@ const isDotSegment = (path: string): boolean =>
 /** The options of `getPeerSpiffeId`: those of `parseXfcc`, plus `requireSingleSan`. */
 export interface PeerSpiffeIdOptions extends ParseOptions {
   /**
-   * Also reject an element with any DNS SAN. Defaults to `false`, since many
-   * real certificates have both. In the text format a crafted URI SAN
-   * `spiffe://td/a;DNS=b` reads as both, so set this if you read `dns` too.
+   * Reject an element with any DNS SAN. Defaults to `true`, because in the
+   * text format a crafted URI SAN `spiffe://td/a;DNS=b` reads as both. Set it
+   * to `false` only if your workload certificates also carry DNS SANs.
    */
   readonly requireSingleSan?: boolean;
 }
@@ -81,8 +81,8 @@ const readSpiffeId = (element: XfccElement, requireSingleSan: boolean): SpiffeId
  * can look like two. That check cannot tell whether a crafted SAN forged the
  * whole element, so it is only as safe as `maxElements`. The ID must be a
  * workload ID (trust domain plus a non-empty path) that matches the SPIFFE-ID
- * standard, with a lowercase scheme. `issuer` is ignored, and so is `dns`
- * unless `requireSingleSan` is set; the README explains why.
+ * standard, with a lowercase scheme, and by default the element must have no
+ * DNS SAN. `issuer` is ignored.
  *
  * @throws {XfccError} if the header is malformed, has no element, or its last
  *   element does not carry exactly one valid SPIFFE ID.
@@ -92,7 +92,7 @@ export const getPeerSpiffeId = (
   header: string | readonly string[] | undefined,
   options: PeerSpiffeIdOptions,
 ): SpiffeId => {
-  const { requireSingleSan = false, ...parseOptions } = readOptions(options, PEER_KEYS);
+  const { requireSingleSan = true, ...parseOptions } = readOptions(options, PEER_KEYS);
   if (typeof requireSingleSan !== 'boolean') {
     throw new TypeError('requireSingleSan is out of range');
   }

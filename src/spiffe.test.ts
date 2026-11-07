@@ -117,31 +117,31 @@ describe('getPeerSpiffeId', () => {
     expect(codeOf(() => getPeerSpiffeId(header, TEXT))).toBe('DUPLICATE_KEY');
   });
 
-  it('returns the part before a smuggled DNS SAN in the text format', () => {
-    // Byte-identical to a certificate with both SANs, so it cannot be rejected
-    // by default.
+  it('rejects a smuggled DNS SAN in the text format by default', () => {
+    // Byte-identical to a certificate with both SANs.
     const header = `Hash=${HASH};URI=spiffe://td/x;DNS=admin.internal`;
-    expect(getPeerSpiffeId(header, TEXT).id).toBe('spiffe://td/x');
+    expect(codeOf(() => getPeerSpiffeId(header, TEXT))).toBe('NOT_ONE_SAN');
+    expect(getPeerSpiffeId(header, { format: 'text', requireSingleSan: false }).id).toBe(
+      'spiffe://td/x',
+    );
   });
 
   it('ignores requireSingleSan inherited from Object.prototype', () => {
-    Object.assign(Object.prototype, { requireSingleSan: 'yes' });
+    Object.assign(Object.prototype, { requireSingleSan: false });
     try {
       const header = `Hash=${HASH};URI=spiffe://td/x;DNS=admin.internal`;
-      expect(getPeerSpiffeId(header, TEXT).id).toBe('spiffe://td/x');
+      expect(codeOf(() => getPeerSpiffeId(header, TEXT))).toBe('NOT_ONE_SAN');
     } finally {
       Reflect.deleteProperty(Object.prototype, 'requireSingleSan');
     }
   });
 
-  it('rejects any DNS SAN when requireSingleSan is set', () => {
-    const header = `Hash=${HASH};URI=spiffe://td/x;DNS=admin.internal`;
-    expect(codeOf(() => getPeerSpiffeId(header, { format: 'text', requireSingleSan: true }))).toBe(
-      'NOT_ONE_SAN',
-    );
-    expect(
-      getPeerSpiffeId(`Hash=${HASH};URI=${API}`, { format: 'text', requireSingleSan: false }).id,
-    ).toBe(API);
+  it('accepts a lone URI SAN with requireSingleSan either way', () => {
+    for (const requireSingleSan of [true, false]) {
+      expect(
+        getPeerSpiffeId(`Hash=${HASH};URI=${API}`, { format: 'text', requireSingleSan }).id,
+      ).toBe(API);
+    }
   });
 });
 
@@ -173,12 +173,10 @@ describe('SPIFFE ID validation', () => {
     expect(codeOf(() => peerOf(...uris))).toBe(code);
   });
 
-  it('rejects a DNS SAN only when requireSingleSan is set', () => {
+  it('rejects a DNS SAN unless requireSingleSan is false', () => {
     const both = JSON.stringify([{ uri: [API], dns: ['api.example'] }]);
-    expect(getPeerSpiffeId(both, JSON_FORMAT).id).toBe(API);
-    expect(codeOf(() => getPeerSpiffeId(both, { ...JSON_FORMAT, requireSingleSan: true }))).toBe(
-      'NOT_ONE_SAN',
-    );
+    expect(codeOf(() => getPeerSpiffeId(both, JSON_FORMAT))).toBe('NOT_ONE_SAN');
+    expect(getPeerSpiffeId(both, { ...JSON_FORMAT, requireSingleSan: false }).id).toBe(API);
   });
 
   it.each([
@@ -200,14 +198,14 @@ describe('SPIFFE ID validation', () => {
     class Getter {
       format = 'text';
       get requireSingleSan() {
-        return true;
+        return false;
       }
     }
     const hidden = { format: 'text' };
-    Object.defineProperty(hidden, 'requireSingleSan', { value: true });
+    Object.defineProperty(hidden, 'requireSingleSan', { value: false });
     const header = `Hash=${HASH};URI=${API};DNS=admin.internal`;
     for (const options of [
-      { __proto__: { requireSingleSan: true }, format: 'text' },
+      { __proto__: { requireSingleSan: false }, format: 'text' },
       new Getter(),
       hidden,
     ]) {
