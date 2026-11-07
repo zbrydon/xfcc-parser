@@ -27,7 +27,7 @@
 //
 // The caller has checked that the input is visible ASCII, SP and HTAB, so a
 // string index is a byte offset.
-import { ElementBuilder, KEY, type ElementOptions, type Key } from './element.ts';
+import { ElementBuilder, KEY, type Key } from './element.ts';
 import { reject } from './errors.ts';
 
 import type { XfccElement } from './index.ts';
@@ -56,11 +56,11 @@ const isOws = (code: number): boolean => code === SPACE || code === TAB;
 class Parser {
   #pos = 0;
   readonly #input: string;
-  readonly #options: ElementOptions;
+  readonly #maxElements: number;
 
-  constructor(input: string, options: ElementOptions) {
+  constructor(input: string, maxElements: number) {
     this.#input = input;
-    this.#options = options;
+    this.#maxElements = maxElements;
   }
 
   /** The next char code, or NaN at the end of the input. */
@@ -87,7 +87,7 @@ class Parser {
       if (this.#atEnd() || this.#peek() === COMMA) {
         throw reject('EMPTY_ELEMENT', this.#pos);
       }
-      if (elements.length >= this.#options.maxElements) {
+      if (elements.length >= this.#maxElements) {
         throw reject('TOO_MANY_ELEMENTS', this.#pos);
       }
       elements.push(this.#element());
@@ -114,7 +114,11 @@ class Parser {
         throw reject('EMPTY_PAIR', this.#pos);
       }
     }
-    return builder.finish(start);
+    const element = builder.finish();
+    if (element.hash === null) {
+      throw reject('MISSING_HASH', start);
+    }
+    return element;
   }
 
   #pair(builder: ElementBuilder, lastKey: number): Key {
@@ -205,5 +209,5 @@ class Parser {
   }
 }
 
-export const parseText = (input: string, options: ElementOptions): XfccElement[] =>
-  new Parser(input, options).header();
+export const parseText = (input: string, maxElements: number): XfccElement[] =>
+  new Parser(input, maxElements).header();

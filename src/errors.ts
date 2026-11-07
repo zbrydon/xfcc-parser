@@ -25,16 +25,15 @@ const MESSAGES = {
   KEY_ORDER: 'keys are not in the order Envoy writes them',
   MISSING_HASH: 'element has no Hash',
   INVALID_JSON: 'invalid JSON-format XFCC value',
+  // `getPeerSpiffeId`'s checks of a parsed element, which have no offset.
+  NO_PEER: 'header has no elements',
+  NOT_ONE_URI: 'expected exactly one URI SAN',
+  NOT_ONE_SAN: 'expected no SAN besides the URI SAN',
+  NOT_SPIFFE: 'URI SAN is not a SPIFFE ID',
+  INVALID_SPIFFE_ID: 'URI SAN is not a valid SPIFFE ID',
 } as const;
 
-// `getPeerSpiffeId`'s checks of a parsed element, which have no offset.
-export type XfccErrorCode =
-  | keyof typeof MESSAGES
-  | 'NO_PEER'
-  | 'NOT_ONE_URI'
-  | 'NOT_ONE_SAN'
-  | 'NOT_SPIFFE'
-  | 'INVALID_SPIFFE_ID';
+export type XfccErrorCode = keyof typeof MESSAGES;
 
 /**
  * Thrown for any header, distinguished name or SPIFFE ID that does not
@@ -64,5 +63,5 @@ export class XfccError extends Error {
 }
 
 /** Builds the error for `code`, with its fixed message. */
-export const reject = (code: keyof typeof MESSAGES, offset: number): XfccError =>
+export const reject = (code: XfccErrorCode, offset?: number): XfccError =>
   new XfccError(code, MESSAGES[code], offset);

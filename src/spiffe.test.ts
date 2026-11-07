@@ -173,10 +173,13 @@ describe('SPIFFE ID validation', () => {
     expect(codeOf(() => peerOf(...uris))).toBe(code);
   });
 
-  it('rejects a DNS SAN unless requireSingleSan is false', () => {
+  it('accepts a JSON DNS SAN unless requireSingleSan is true', () => {
+    // Envoy escapes JSON SANs, so a DNS SAN cannot be smuggled in.
     const both = JSON.stringify([{ uri: [API], dns: ['api.example'] }]);
-    expect(codeOf(() => getPeerSpiffeId(both, JSON_FORMAT))).toBe('NOT_ONE_SAN');
-    expect(getPeerSpiffeId(both, { ...JSON_FORMAT, requireSingleSan: false }).id).toBe(API);
+    expect(getPeerSpiffeId(both, JSON_FORMAT).id).toBe(API);
+    expect(codeOf(() => getPeerSpiffeId(both, { ...JSON_FORMAT, requireSingleSan: true }))).toBe(
+      'NOT_ONE_SAN',
+    );
   });
 
   it.each([

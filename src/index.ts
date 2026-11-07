@@ -1,11 +1,13 @@
 import { parseDn, type DnAttribute } from './dn.ts';
 import { reject } from './errors.ts';
 import { parseJson } from './json.ts';
+import { PEER_KEYS, readSpiffeId, type PeerSpiffeIdOptions, type SpiffeId } from './spiffe.ts';
 import { parseText } from './text.ts';
 import { PARSE_OPTION_KEYS, readOptions } from './validate.ts';
 
 export { XfccError, type XfccErrorCode } from './errors.ts';
 export type { DnAttribute } from './dn.ts';
+export type { SpiffeId, PeerSpiffeIdOptions } from './spiffe.ts';
 
 /** Hard ceiling for `maxLength` (1 MiB). */
 const MAX_LENGTH_LIMIT = 1 << 20;
@@ -81,11 +83,9 @@ interface NormalizedOptions {
   readonly format: 'text' | 'json';
 }
 
-// Plain JavaScript can omit `options`, which then fails like any invalid one.
 // An invalid option is a bug in the caller, not untrusted input, so it throws
 // `TypeError`: an `XfccError` would read as a rejected caller.
-const normalizeOptions = (options: ParseOptions | null | undefined): NormalizedOptions => {
-  const own = readOptions(options, PARSE_OPTION_KEYS);
+const normalizeOptions = (own: ParseOptions): NormalizedOptions => {
   const { format } = own;
   if (format === undefined) {
     throw new TypeError('format is required');
@@ -119,7 +119,9 @@ const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] =
   if (blank) {
     throw reject('EMPTY', 0);
   }
-  return options.format === 'text' ? parseText(value, options) : parseJson(value, options);
+  return options.format === 'text'
+    ? parseText(value, options.maxElements)
+    : parseJson(value, options.maxElements);
 };
 
 /**
@@ -135,11 +137,18 @@ const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] =
  * @throws {XfccError} if the header is malformed in any way.
  * @throws {TypeError} if `options` or the type of `header` is invalid.
  */
+// Plain JavaScript can omit `options`, which then fails like any invalid one.
 export const parseXfcc = (
   header: string | readonly string[] | undefined,
   options: ParseOptions,
+): readonly XfccElement[] => parse(header, readOptions(options, PARSE_OPTION_KEYS));
+
+/** `parseXfcc`, with `own` already copied by `readOptions`. */
+const parse = (
+  header: string | readonly string[] | undefined,
+  own: ParseOptions,
 ): readonly XfccElement[] => {
-  const normalized = normalizeOptions(options);
+  const normalized = normalizeOptions(own);
   if (header === undefined) {
     return Object.freeze([]);
   }
@@ -147,7 +156,43 @@ export const parseXfcc = (
   return Object.freeze(parseHeader(value, normalized));
 };
 
-export { getPeerSpiffeId, type SpiffeId, type PeerSpiffeIdOptions } from './spiffe.ts';
+/**
+ * Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest
+ * to this service: the last element of the header.
+ *
+ * Takes the options of `parseXfcc`, so `format` is required and `maxElements`
+ * defaults to 1 (set it to the exact number of proxy hops), plus
+ * `requireSingleSan`. If a proxy that is not the caller sits between the
+ * caller and this service, this returns that proxy's ID.
+ *
+ * The element must have exactly one URI SAN: in the text format, a crafted SAN
+ * can look like two. That check cannot tell whether a crafted SAN forged the
+ * whole element, so it is only as safe as `maxElements`. The ID must be a
+ * workload ID (trust domain plus a non-empty path) that matches the SPIFFE-ID
+ * standard, with a lowercase scheme, and in the text format by default the
+ * element must have no DNS SAN. `issuer` is ignored.
+ *
+ * @throws {XfccError} if the header is malformed, has no element, or its last
+ *   element does not carry exactly one valid SPIFFE ID.
+ * @throws {TypeError} if `options` or the type of `header` is invalid.
+ */
+export const getPeerSpiffeId = (
+  header: string | readonly string[] | undefined,
+  options: PeerSpiffeIdOptions,
+): SpiffeId => {
+  // Not a rest-spread: its copy would inherit from `Object.prototype`.
+  const own = readOptions(options, PEER_KEYS);
+  const { requireSingleSan } = own;
+  if (requireSingleSan !== undefined && typeof requireSingleSan !== 'boolean') {
+    throw new TypeError('requireSingleSan is out of range');
+  }
+  // The LAST element was appended by the proxy closest to this service.
+  const nearest = parse(header, own).at(-1);
+  if (nearest === undefined) {
+    throw reject('NO_PEER');
+  }
+  return readSpiffeId(nearest, requireSingleSan ?? own.format === 'text');
+};
 
 const joinHeaderLines = (lines: readonly string[]): string => {
   if (!Array.isArray(lines) || !lines.every((line) => typeof line === 'string')) {

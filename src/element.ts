@@ -19,11 +19,6 @@ export const KEY = {
 
 export type Key = (typeof KEY)[keyof typeof KEY];
 
-/** The options the format parsers read. */
-export interface ElementOptions {
-  readonly maxElements: number;
-}
-
 /**
  * Rejects a `Subject` / `Issuer` that is not RFC 4514, or that holds a raw
  * control or non-ASCII character. Envoy escapes control characters (a tab is
@@ -61,7 +56,6 @@ export class ElementBuilder {
   #issuer: string | null = null;
   readonly #text: boolean;
 
-  /** In the `text` format every element must have a `Hash`. */
   constructor(format: 'text' | 'json') {
     this.#text = format === 'text';
   }
@@ -164,11 +158,8 @@ export class ElementBuilder {
     }
   }
 
-  /** The frozen element, once the format's checks hold. */
-  finish(offset: number): XfccElement {
-    if (this.#text && this.#hash === null) {
-      throw reject('MISSING_HASH', offset);
-    }
+  /** The frozen element. */
+  finish(): XfccElement {
     return Object.freeze({
       by: Object.freeze(this.#by),
       hash: this.#hash,
