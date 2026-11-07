@@ -270,6 +270,15 @@ describe('parseXfcc', () => {
     expect(error.message).not.toContain('secret');
   });
 
+  it('reports an element-level error at the start of the element', () => {
+    const first = `Hash=${HASH};URI=spiffe://a, `;
+    const error = errorOf(() =>
+      parseXfcc(`${first}URI=spiffe://admin`, { format: 'text', maxElements: 2 }),
+    );
+    expect(error.code).toBe('MISSING_HASH');
+    expect(error.offset).toBe(first.length);
+  });
+
   it.each([
     ['[{"uri":["a:b", "relative"]}]', 'INVALID_URI', 16],
     ['[{"uri":["a:Hash=x"]}]', 'INVALID_URI', 9],

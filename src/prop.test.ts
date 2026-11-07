@@ -3,7 +3,7 @@
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
-import { CA_PEM, CLIENT_PEM, urlEncode } from '../test/helpers.ts';
+import { CA_PEM, CLIENT_PEM, errorOf, urlEncode } from '../test/helpers.ts';
 
 import {
   parseDistinguishedName,
@@ -178,6 +178,25 @@ describe('round trips', () => {
           elements.map((el) => ({ ...el, issuer: null })),
         );
       }),
+    );
+  });
+
+  it('rejects a text Issuer the DN parser rejects', () => {
+    fc.assert(
+      fc.property(
+        fc.array(element, { maxLength: 2 }),
+        element,
+        dnRdns.map(formatDn),
+        fc.constantFrom(',', '+'),
+        (rest, last, issuer, suffix) => {
+          const header = emitText([...rest, { ...last, issuer: `${issuer}${suffix}` }]);
+          const { code, offset } = errorOf(() => parseXfcc(header, TEXT));
+          expect({ code, offset }).toEqual({
+            code: 'INVALID_DN',
+            offset: header.lastIndexOf('Issuer="') + 'Issuer='.length,
+          });
+        },
+      ),
     );
   });
 
