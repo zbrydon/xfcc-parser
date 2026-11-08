@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import { ok, tryParse, urlEncode } from './common.mjs';
 
 /** A DER SEQUENCE around `content`. */
@@ -14,6 +12,9 @@ const pem = (bytes) => {
   return `-----BEGIN CERTIFICATE-----\n${lines.map((line) => `${line}\n`).join('')}-----END CERTIFICATE-----\n`;
 };
 
+// Hash is not compared with Cert, so any valid hash will do.
+const hash = 'a'.repeat(64);
+
 const isAccepted = (header, options) => tryParse(header, options).ok;
 
 // Random bytes almost never form valid PEM, so build well-formed headers from
@@ -24,9 +25,7 @@ export const fuzz = (data) => {
   }
   const rest = data.subarray(1);
   const split = Math.min(rest.length, data[0] * 8);
-  const leafDer = der(rest.subarray(0, Math.min(split, 1500)));
-  const leaf = pem(leafDer);
-  const hash = createHash('sha256').update(leafDer).digest('hex');
+  const leaf = pem(der(rest.subarray(0, Math.min(split, 1500))));
   const chain = [];
   for (let i = split; i < rest.length && chain.length < 4; i += 200) {
     chain.push(pem(der(rest.subarray(i, i + 200))));
