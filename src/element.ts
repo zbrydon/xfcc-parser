@@ -158,10 +158,6 @@ export class ElementBuilder {
     }
   }
 
-  get hash(): string | null {
-    return this.#hash;
-  }
-
   /** The frozen element. */
   finish(): XfccElement {
     return Object.freeze({

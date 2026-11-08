@@ -114,10 +114,11 @@ class Parser {
         throw reject('EMPTY_PAIR', this.#pos);
       }
     }
-    if (builder.hash === null) {
+    const element = builder.finish();
+    if (element.hash === null) {
       throw reject('MISSING_HASH', start);
     }
-    return builder.finish();
+    return element;
   }
 
   #pair(builder: ElementBuilder, lastKey: number): Key {
