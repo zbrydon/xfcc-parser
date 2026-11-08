@@ -9,7 +9,7 @@ import { parseDistinguishedName, parseXfcc, XfccError, type ParseOptions } from 
 interface Expected {
   readonly value?: unknown;
   readonly code?: string;
-  readonly offset?: number | undefined;
+  readonly offset?: number | null;
 }
 
 interface HeaderVector {
@@ -38,7 +38,7 @@ const outcome = (fn: () => unknown, isJson = false): Expected => {
     }
     return isJson && error.code === 'INVALID_JSON'
       ? { code: error.code }
-      : { code: error.code, offset: error.offset };
+      : { code: error.code, offset: error.offset ?? null };
   }
 };
 
