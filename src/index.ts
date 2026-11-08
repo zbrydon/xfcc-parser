@@ -1,7 +1,7 @@
 import { parseDn, type DnAttribute } from './dn.ts';
 import { reject, rejectPeer } from './errors.ts';
 import { parseJson } from './json.ts';
-import { PEER_KEYS, readSpiffeId, type PeerSpiffeIdOptions, type SpiffeId } from './spiffe.ts';
+import { readSpiffeId, type PeerSpiffeIdOptions, type SpiffeId } from './spiffe.ts';
 import { parseText } from './text.ts';
 import { PARSE_OPTION_KEYS, readOptions } from './validate.ts';
 
@@ -64,6 +64,8 @@ export interface ParseOptions {
 
 /** A relative distinguished name: one or more attributes joined by `+`. */
 export type Rdn = readonly DnAttribute[];
+
+const PEER_KEYS: ReadonlySet<string> = new Set([...PARSE_OPTION_KEYS, 'requireSingleSan']);
 
 const invalidOption = (name: string): TypeError => new TypeError(`${name} is out of range`);
 

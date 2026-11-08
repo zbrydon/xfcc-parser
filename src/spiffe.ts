@@ -1,5 +1,4 @@
 import { rejectPeer } from './errors.ts';
-import { PARSE_OPTION_KEYS } from './validate.ts';
 
 import type { ParseOptions, XfccElement } from './index.ts';
 
@@ -46,8 +45,6 @@ export interface PeerSpiffeIdOptions extends ParseOptions {
    */
   readonly requireSingleSan?: boolean;
 }
-
-export const PEER_KEYS: ReadonlySet<string> = new Set([...PARSE_OPTION_KEYS, 'requireSingleSan']);
 
 export const readSpiffeId = (element: XfccElement, requireSingleSan: boolean): SpiffeId => {
   const [uri, ...rest] = element.uri;
