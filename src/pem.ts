@@ -11,13 +11,6 @@ const BASE64_LINE_LEN = 64;
 const URL_SAFE = charTable('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*-._');
 const BASE64 = charTable('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=');
 
-/** One PEM-encoded certificate. */
-export interface PemBlock {
-  /** From `-----BEGIN` up to and including the line ending after the `END` line, if any. */
-  readonly pem: string;
-  readonly der: Buffer;
-}
-
 /**
  * Decodes Envoy's `PercentEncoding::urlEncode` output, or returns `null`. Envoy
  * encodes every byte except `ALPHA / DIGIT / "*" / "-" / "." / "_"`, so anything
@@ -119,11 +112,13 @@ class Lines {
  * The body follows the RFC 7468 §3 `stricttextualmsg` grammar, but trailing
  * whitespace after the `BEGIN` / `END` lines and a missing final line break
  * are accepted, as RFC 7468 parsers should. Nothing else may appear before,
- * between or after the blocks. An empty list means the text is not valid.
+ * between or after the blocks. Each block runs from `-----BEGIN` up to and
+ * including the line ending after the `END` line, if any. An empty list means
+ * the text is not valid.
  */
-export const parseCertificates = (text: string): PemBlock[] => {
+export const parseCertificates = (text: string): string[] => {
   const lines = new Lines(text);
-  const blocks: PemBlock[] = [];
+  const blocks: string[] = [];
   while (lines.advance()) {
     if (trimWsp(lines.text) !== BEGIN || !lines.hasEol) {
       return [];
@@ -164,13 +159,13 @@ export const parseCertificates = (text: string): PemBlock[] => {
     if (der.toString('base64') !== body || !isDerSequence(der)) {
       return [];
     }
-    blocks.push({ pem: text.slice(blockStart, lines.next), der });
+    blocks.push(text.slice(blockStart, lines.next));
   }
   return blocks;
 };
 
 /** Parses exactly one certificate, or returns `undefined`. */
-export const parseCertificate = (text: string): PemBlock | undefined => {
+export const parseCertificate = (text: string): string | undefined => {
   const [block, extra] = parseCertificates(text);
   return extra === undefined ? block : undefined;
 };

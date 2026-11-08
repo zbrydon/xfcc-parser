@@ -128,11 +128,11 @@ export class ElementBuilder {
         if (this.#cert !== null) {
           throw reject('DUPLICATE_KEY', offset);
         }
-        const block = parseCertificate(this.#text ? decode(value, offset) : value);
-        if (block === undefined) {
+        const cert = parseCertificate(this.#text ? decode(value, offset) : value);
+        if (cert === undefined) {
           throw reject('INVALID_PEM', offset);
         }
-        this.#cert = block.pem;
+        this.#cert = cert;
         break;
       }
       case KEY.CHAIN:
@@ -146,16 +146,20 @@ export class ElementBuilder {
           if (blocks.length === 0) {
             throw reject('INVALID_PEM', offset);
           }
-          this.#presentedChain.push(...blocks.map((block) => block.pem));
+          this.#presentedChain.push(...blocks);
         } else {
-          const block = parseCertificate(value);
-          if (block === undefined) {
+          const cert = parseCertificate(value);
+          if (cert === undefined) {
             throw reject('INVALID_PEM', offset);
           }
-          this.#presentedChain.push(block.pem);
+          this.#presentedChain.push(cert);
         }
         break;
     }
+  }
+
+  get hash(): string | null {
+    return this.#hash;
   }
 
   /** The frozen element. */
