@@ -29,7 +29,10 @@ export const fuzz = (data) => {
     result = tryParse(input, options);
   } catch (error) {
     // An invalid option is a caller bug, so it throws TypeError, never XfccError.
-    ok(error instanceof TypeError && !valid);
+    if (!(error instanceof TypeError)) {
+      throw error;
+    }
+    ok(!valid);
     return;
   }
   ok(valid);

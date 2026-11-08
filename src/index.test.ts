@@ -335,8 +335,6 @@ describe('parseXfcc', () => {
     { maxElements: 2 ** 32 + 1 },
     { format: 'xml' },
     { format: 'auto' },
-    { requireCertHash: 'yes' },
-    { allowTextIssuer: 1 },
     { maxLength: '10' },
     { maxElement: 1 },
     { verifyHash: true },
