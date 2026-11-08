@@ -1,4 +1,4 @@
-import { reject } from './errors.ts';
+import { rejectPeer } from './errors.ts';
 import { PARSE_OPTION_KEYS } from './validate.ts';
 
 import type { ParseOptions, XfccElement } from './index.ts';
@@ -52,20 +52,20 @@ export const PEER_KEYS: ReadonlySet<string> = new Set([...PARSE_OPTION_KEYS, 're
 export const readSpiffeId = (element: XfccElement, requireSingleSan: boolean): SpiffeId => {
   const [uri, ...rest] = element.uri;
   if (uri === undefined || rest.length > 0) {
-    throw reject('NOT_ONE_URI');
+    throw rejectPeer('NOT_ONE_URI');
   }
   if (requireSingleSan && element.dns.length > 0) {
-    throw reject('NOT_ONE_SAN');
+    throw rejectPeer('NOT_ONE_SAN');
   }
   if (!uri.startsWith('spiffe://')) {
-    throw reject('NOT_SPIFFE');
+    throw rejectPeer('NOT_SPIFFE');
   }
   // The regex only admits ASCII, so the string length is the byte length.
   const match = uri.length > MAX_SPIFFE_ID_LENGTH ? null : SPIFFE_ID.exec(uri);
   const trustDomain = match?.[1];
   const path = match?.[2];
   if (trustDomain === undefined || path === undefined || isDotSegment(path)) {
-    throw reject('INVALID_SPIFFE_ID');
+    throw rejectPeer('INVALID_SPIFFE_ID');
   }
   const istio = ISTIO_PATH.exec(path);
   return Object.freeze({

@@ -1,5 +1,5 @@
 import { parseDn, type DnAttribute } from './dn.ts';
-import { reject } from './errors.ts';
+import { reject, rejectPeer } from './errors.ts';
 import { parseJson } from './json.ts';
 import { PEER_KEYS, readSpiffeId, type PeerSpiffeIdOptions, type SpiffeId } from './spiffe.ts';
 import { parseText } from './text.ts';
@@ -77,11 +77,7 @@ const checkInteger = (name: string, value: unknown, max: number): number | undef
   return value;
 };
 
-interface NormalizedOptions {
-  readonly maxLength: number;
-  readonly maxElements: number;
-  readonly format: 'text' | 'json';
-}
+type NormalizedOptions = Required<ParseOptions>;
 
 // An invalid option is a bug in the caller, not untrusted input, so it throws
 // `TypeError`: an `XfccError` would read as a rejected caller.
@@ -184,12 +180,12 @@ export const getPeerSpiffeId = (
   const own = readOptions(options, PEER_KEYS);
   const { requireSingleSan } = own;
   if (requireSingleSan !== undefined && typeof requireSingleSan !== 'boolean') {
-    throw new TypeError('requireSingleSan is out of range');
+    throw invalidOption('requireSingleSan');
   }
   // The LAST element was appended by the proxy closest to this service.
   const nearest = parse(header, own).at(-1);
   if (nearest === undefined) {
-    throw reject('NO_PEER');
+    throw rejectPeer('NO_PEER');
   }
   return readSpiffeId(nearest, requireSingleSan ?? own.format === 'text');
 };
