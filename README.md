@@ -29,7 +29,9 @@ let caller: string | undefined;
 try {
   // `format` must match the Envoy listener. `maxElements` defaults to 1: if more
   // than one of your proxies appends an element, set it to the exact hop count.
-  const { id } = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
+  const { id } = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], {
+    format: 'json',
+  });
   caller = callers.get(id);
 } catch (error) {
   // Every rejected header is an XfccError. A TypeError means the options are wrong.
@@ -50,7 +52,9 @@ import { parseDistinguishedName, parseXfcc } from 'xfcc-parser';
 // The LAST element was appended by the proxy closest to this service. Require
 // exactly one SAN across `uri` and `dns`: in the text format, two SANs and one
 // crafted SAN can look the same.
-const nearest = parseXfcc(request.headers['x-forwarded-client-cert'], { format: 'json' }).at(-1);
+const nearest = parseXfcc(request.headers['x-forwarded-client-cert'], {
+  format: 'json',
+}).at(-1);
 if (nearest?.uri.length !== 0 || nearest.dns.length !== 1 || nearest.dns[0] !== 'api.internal') {
   throw new Forbidden();
 }
@@ -88,7 +92,9 @@ Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest to th
 ```ts
 import { getPeerSpiffeId } from 'xfcc-parser';
 
-const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
+const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], {
+  format: 'json',
+});
 // {
 //   id: 'spiffe://cluster.local/ns/payments/sa/api',
 //   trustDomain: 'cluster.local',
@@ -217,7 +223,7 @@ This builds the package and benchmarks `dist/`, because Vitest's module runner a
 
 1. Add a changeset with `pnpm changeset`. Merging to `main` opens a "Version Packages" PR.
 2. Merging that PR builds and tests the package, then stages it on npm after approval in the `release` environment.
-3. Review the staged version with `npm stage view <id>`, then approve it with 2FA using `npm stage approve <id>` or on npmjs.com.
+3. Review the staged version with `pnpm stage view <id>`, then approve it with 2FA using `pnpm stage approve <id>` or on npmjs.com.
 4. Create the GitHub release and tag with `scripts/release.sh [version]`. It tags the commit named in the npm provenance and uses the version's section of `CHANGELOG.md` as the notes.
 
 ## License
