@@ -52,7 +52,6 @@ export const HEADER_CASES: readonly (readonly [string, string, ParseOptions])[] 
     JSON_FORMAT,
   ],
   ['text, Cert and Chain', cert, TEXT],
-  ['text, Cert and Chain, requireCertHash', cert, { format: 'text', requireCertHash: true }],
   ['reject, unknown key', 'Foo=bar', TEXT],
   ['reject, invalid character', `Hash=${hashA};URI=http://a\n`, TEXT],
   ['reject, too long', 'a'.repeat(64 * 1024 + 1), TEXT],

@@ -13,17 +13,7 @@ import {
   urlEncode,
 } from '../test/helpers.ts';
 
-import {
-  MAX_ELEMENTS_LIMIT,
-  MAX_LENGTH_LIMIT,
-  parseDistinguishedName,
-  getPeerSpiffeId,
-  parseXfcc,
-  safeGetPeerSpiffeId,
-  safeParseXfcc,
-  XfccError,
-  type XfccErrorCode,
-} from './index.ts';
+import { parseDistinguishedName, getPeerSpiffeId, parseXfcc, type XfccErrorCode } from './index.ts';
 
 const HASH = HASH_A;
 
@@ -41,15 +31,14 @@ describe('package.json', () => {
   });
 });
 
-describe('limits', () => {
-  it('exposes the documented limits', () => {
-    expect(MAX_LENGTH_LIMIT).toBe(1 << 20);
-    expect(MAX_ELEMENTS_LIMIT).toBe(1024);
-  });
+// The documented ceilings.
+const MAX_LENGTH_LIMIT = 1 << 20;
+const MAX_ELEMENTS_LIMIT = 1024;
 
+describe('limits', () => {
   it('defaults maxLength to 64 KiB', () => {
     const atLimit = `Hash=${HASH};URI=a:`.padEnd(64 * 1024, 'a');
-    expect(safeParseXfcc(atLimit, TEXT).ok).toBe(true);
+    expect(parseXfcc(atLimit, TEXT)).toHaveLength(1);
     expect(codeOf(() => parseXfcc(`${atLimit}a`, TEXT))).toBe('TOO_LONG');
   });
 });
@@ -101,17 +90,11 @@ describe('parseXfcc', () => {
     expect(elements.map((e) => e.by[0])).toEqual(['spiffe://edge', 'spiffe://mesh']);
   });
 
-  it('decodes Cert and Chain and verifies Hash', () => {
+  it('decodes Cert and Chain', () => {
     const header = `Hash=${CLIENT_SHA256};Cert="${urlEncode(CLIENT_PEM)}";Chain="${urlEncode(CLIENT_PEM + CA_PEM)}"`;
-    const options = { format: 'text', requireCertHash: true } as const;
-    const [element] = parseXfcc(header, options);
+    const [element] = parseXfcc(header, TEXT);
     expect(element?.cert).toBe(CLIENT_PEM);
     expect(element?.presentedChain).toEqual([CLIENT_PEM, CA_PEM]);
-
-    expect(codeOf(() => parseXfcc(header.replace(CLIENT_SHA256, HASH), options))).toBe(
-      'HASH_MISMATCH',
-    );
-    expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('MISSING_CERT_OR_HASH');
   });
 
   it('keeps Subject escapes so a forged RDN stays inside its value', () => {
@@ -136,13 +119,10 @@ describe('parseXfcc', () => {
     );
   });
 
-  it('returns a text-format Issuer only when allowTextIssuer is set', () => {
+  it('never returns a text-format Issuer', () => {
     // A URI SAN `spiffe://td/x;Issuer="CN=Trusted CA"` emits exactly this.
     const header = `Hash=${HASH};URI=spiffe://td/x;Issuer="CN=Trusted CA"`;
     expect(parseXfcc(header, TEXT)[0]?.issuer).toBeNull();
-    expect(parseXfcc(header, { format: 'text', allowTextIssuer: true })[0]?.issuer).toBe(
-      'CN=Trusted CA',
-    );
     // It is still validated.
     expect(codeOf(() => parseXfcc(`Hash=${HASH};Issuer="CN"`, TEXT))).toBe('INVALID_DN');
     expect(parseXfcc('[{"issuer":"CN=CA"}]', JSON_FORMAT)[0]?.issuer).toBe('CN=CA');
@@ -152,25 +132,24 @@ describe('parseXfcc', () => {
     'requires format with options %j',
     (options) => {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(undefined, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(undefined, options)).toThrow(TypeError);
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
     },
   );
 
   it('ignores options inherited from Object.prototype', () => {
-    const inherited = { format: 'text', maxElements: 2, allowTextIssuer: true };
+    const inherited = { format: 'text', maxElements: 2, maxLength: 1 << 20 };
     Object.assign(Object.prototype, inherited);
     try {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, {}))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, {})).toThrow(TypeError);
       const twoHops = `Hash=${HASH};URI=spiffe://td/a,Hash=${HASH};URI=spiffe://td/b`;
       expect(codeOf(() => parseXfcc(twoHops, { format: 'text' }))).toBe('TOO_MANY_ELEMENTS');
-      expect(safeGetPeerSpiffeId(twoHops, { format: 'text' })).toMatchObject({
-        ok: false,
-        error: { code: 'TOO_MANY_ELEMENTS' },
-      });
-      expect(parseXfcc(`Hash=${HASH};Issuer="CN=CA"`, { format: 'text' })[0]?.issuer).toBeNull();
+      expect(codeOf(() => getPeerSpiffeId(twoHops, { format: 'text' }))).toBe('TOO_MANY_ELEMENTS');
+      expect(codeOf(() => parseXfcc('a'.repeat(64 * 1024 + 1), { format: 'text' }))).toBe(
+        'TOO_LONG',
+      );
     } finally {
       for (const key of Object.keys(inherited)) {
         Reflect.deleteProperty(Object.prototype, key);
@@ -179,34 +158,31 @@ describe('parseXfcc', () => {
   });
 
   it('rejects options that are not a plain or null-prototype object', () => {
-    const inherited = { __proto__: { requireCertHash: true }, format: 'text' } as const;
+    const inherited = { __proto__: { maxLength: 16 }, format: 'text' } as const;
     class Getter {
       format = 'text';
-      get requireCertHash() {
-        return true;
+      get maxLength() {
+        return 16;
       }
     }
     for (const options of [inherited, new Getter(), [], new Date()]) {
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
       // @ts-expect-error -- deliberately invalid at runtime
-      expect(codeOf(() => getPeerSpiffeId(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow(TypeError);
     }
     const bare = { __proto__: null, format: 'text' } as const;
     expect(parseXfcc(`Hash=${HASH}`, bare)[0]?.hash).toBe(HASH);
-    expect(safeGetPeerSpiffeId(`Hash=${HASH}`, bare)).toMatchObject({
-      ok: false,
-      error: { code: 'NOT_ONE_URI' },
-    });
+    expect(() => getPeerSpiffeId(`Hash=${HASH}`, bare)).toThrow('NOT_ONE_URI');
   });
 
   it('rejects a non-enumerable or symbol option key rather than ignoring it', () => {
     const hidden = { format: 'text' } as const;
-    Object.defineProperty(hidden, 'requireCertHash', { value: true });
-    const symbol = { format: 'text', [Symbol('requireCertHash')]: true } as const;
+    Object.defineProperty(hidden, 'maxLength', { value: 16 });
+    const symbol = { format: 'text', [Symbol('maxLength')]: 16 } as const;
     for (const options of [hidden, symbol]) {
-      expect(codeOf(() => parseXfcc(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
-      expect(codeOf(() => getPeerSpiffeId(`Hash=${HASH}`, options))).toBe('INVALID_OPTION');
+      expect(() => parseXfcc(`Hash=${HASH}`, options)).toThrow(TypeError);
+      expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow(TypeError);
     }
   });
 
@@ -215,28 +191,19 @@ describe('parseXfcc', () => {
     // @ts-expect-error -- typed unknown, a plain object at runtime
     expect(parseXfcc(`Hash=${HASH}`, options)[0]?.hash).toBe(HASH);
     // @ts-expect-error -- typed unknown, a plain object at runtime
-    expect(safeGetPeerSpiffeId(`Hash=${HASH}`, options)).toMatchObject({
-      ok: false,
-      error: { code: 'NOT_ONE_URI' },
-    });
+    expect(() => getPeerSpiffeId(`Hash=${HASH}`, options)).toThrow('NOT_ONE_URI');
     // A null-prototype parent that holds an option is not a realm's Object.prototype.
-    const parent = Object.defineProperty({ __proto__: null }, 'requireCertHash', { value: true });
+    const parent = Object.defineProperty({ __proto__: null }, 'maxLength', { value: 1 << 20 });
     const forged = { __proto__: parent, format: 'text' } as const;
-    expect(codeOf(() => parseXfcc(`Hash=${HASH}`, forged))).toBe('INVALID_OPTION');
+    expect(() => parseXfcc(`Hash=${HASH}`, forged)).toThrow(TypeError);
   });
 
   it('still returns errors when Error.stackTraceLimit is read-only', () => {
     const { stackTraceLimit } = Error;
     Object.defineProperty(Error, 'stackTraceLimit', { writable: false });
     try {
-      expect(safeParseXfcc(' ', { format: 'text' })).toMatchObject({
-        ok: false,
-        error: { code: 'EMPTY' },
-      });
-      expect(safeGetPeerSpiffeId(`Hash=${HASH}`, { format: 'text' })).toMatchObject({
-        ok: false,
-        error: { code: 'NOT_ONE_URI' },
-      });
+      expect(codeOf(() => parseXfcc(' ', TEXT))).toBe('EMPTY');
+      expect(() => getPeerSpiffeId(`Hash=${HASH}`, TEXT)).toThrow('NOT_ONE_URI');
     } finally {
       Object.defineProperty(Error, 'stackTraceLimit', { writable: true, value: stackTraceLimit });
     }
@@ -303,6 +270,15 @@ describe('parseXfcc', () => {
     expect(error.message).not.toContain('secret');
   });
 
+  it('reports an element-level error at the start of the element', () => {
+    const first = `Hash=${HASH};URI=spiffe://a, `;
+    const error = errorOf(() =>
+      parseXfcc(`${first}URI=spiffe://admin`, { format: 'text', maxElements: 2 }),
+    );
+    expect(error.code).toBe('MISSING_HASH');
+    expect(error.offset).toBe(first.length);
+  });
+
   it.each([
     ['[{"uri":["a:b", "relative"]}]', 'INVALID_URI', 16],
     ['[{"uri":["a:Hash=x"]}]', 'INVALID_URI', 9],
@@ -310,9 +286,8 @@ describe('parseXfcc', () => {
     ['[{"subject":""}]', 'EMPTY_VALUE', 12],
     ['[{"dns": [ ]}]', 'EMPTY_VALUE', 9],
     ['[ ]', 'EMPTY', 0],
-    ['[ {"by":["a:b"]}]', 'MISSING_CERT_OR_HASH', 2],
   ])('reports the offset of JSON error %j', (header, expected, offset) => {
-    const error = errorOf(() => parseXfcc(header, { format: 'json', requireCertHash: true }));
+    const error = errorOf(() => parseXfcc(header, JSON_FORMAT));
     expect(error.code).toBe(expected);
     expect(error.offset).toBe(offset);
     expect(error.message).toContain(`(at byte ${offset})`);
@@ -360,26 +335,22 @@ describe('parseXfcc', () => {
     { maxElements: 2 ** 32 + 1 },
     { format: 'xml' },
     { format: 'auto' },
-    { requireCertHash: 'yes' },
-    { allowTextIssuer: 1 },
     { maxLength: '10' },
     { maxElement: 1 },
     { verifyHash: true },
     { require_cert_hash: true },
   ])('rejects invalid option %j', (option) => {
     // @ts-expect-error -- deliberately invalid at runtime
-    expect(codeOf(() => parseXfcc('URI=a:', { format: 'text', ...option }))).toBe('INVALID_OPTION');
+    expect(() => parseXfcc('URI=a:', { format: 'text', ...option })).toThrow(TypeError);
   });
 
   it.each(['text', 1, []])('rejects non-object options %j', (options) => {
     // @ts-expect-error -- deliberately invalid at runtime
-    expect(codeOf(() => parseXfcc('URI=a:', options))).toBe('INVALID_OPTION');
+    expect(() => parseXfcc('URI=a:', options)).toThrow(TypeError);
   });
 
   it('validates options even when the header is absent', () => {
-    expect(codeOf(() => parseXfcc(undefined, { format: 'text', maxLength: 0 }))).toBe(
-      'INVALID_OPTION',
-    );
+    expect(() => parseXfcc(undefined, { format: 'text', maxLength: 0 })).toThrow(TypeError);
   });
 
   it.each([42, null, {}, [1], ['a', 2]])('throws TypeError for header %j', (header) => {
@@ -394,50 +365,6 @@ describe('XfccError', () => {
     const error = errorOf(() => parseXfcc('Foo=bar', TEXT));
     expect(error.stack).not.toMatch(/\n\s+at /);
     expect(Error.stackTraceLimit).toBe(limit);
-  });
-});
-
-describe('safeParseXfcc', () => {
-  it('returns the frozen elements on success', () => {
-    const result = safeParseXfcc(`Hash=${HASH}`, TEXT);
-    expect(result).toEqual({ ok: true, value: parseXfcc(`Hash=${HASH}`, TEXT) });
-    expect(Object.isFrozen(result)).toBe(true);
-  });
-
-  it('returns an empty list when the header is absent', () => {
-    expect(safeParseXfcc(undefined, TEXT)).toEqual({ ok: true, value: [] });
-  });
-
-  it('returns the XfccError instead of throwing', () => {
-    const result = safeParseXfcc('URI=http://a;secret-token=x', TEXT);
-    expect(result.ok).toBe(false);
-    if (result.ok) {
-      throw new Error('expected a failure');
-    }
-    expect(result.error).toBeInstanceOf(XfccError);
-    expect(result.error.code).toBe('UNKNOWN_KEY');
-    expect(result.error.offset).toBe(13);
-    expect(Object.isFrozen(result)).toBe(true);
-  });
-
-  it('reports oversized headers and invalid options as failures', () => {
-    expect(safeParseXfcc('a'.repeat(64 * 1024 + 1), TEXT)).toMatchObject({
-      ok: false,
-      error: { code: 'TOO_LONG', offset: 64 * 1024 },
-    });
-    expect(safeParseXfcc('URI=a:', { format: 'text', maxLength: 0 })).toMatchObject({
-      ok: false,
-      error: { code: 'INVALID_OPTION' },
-    });
-    expect(safeParseXfcc('URI=a:', { format: 'text', maxElements: 0 })).toMatchObject({
-      ok: false,
-      error: { code: 'INVALID_OPTION' },
-    });
-  });
-
-  it('still throws TypeError for a header of the wrong type', () => {
-    // @ts-expect-error -- deliberately invalid at runtime
-    expect(() => safeParseXfcc(42, TEXT)).toThrow(TypeError);
   });
 });
 

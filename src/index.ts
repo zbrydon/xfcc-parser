@@ -1,16 +1,18 @@
 import { parseDn, type DnAttribute } from './dn.ts';
-import { reject, XfccError } from './errors.ts';
+import { reject, rejectPeer } from './errors.ts';
 import { parseJson } from './json.ts';
+import { readSpiffeId, type PeerSpiffeIdOptions, type SpiffeId } from './spiffe.ts';
 import { parseText } from './text.ts';
 import { PARSE_OPTION_KEYS, readOptions } from './validate.ts';
 
 export { XfccError, type XfccErrorCode } from './errors.ts';
 export type { DnAttribute } from './dn.ts';
+export type { SpiffeId, PeerSpiffeIdOptions } from './spiffe.ts';
 
 /** Hard ceiling for `maxLength` (1 MiB). */
-export const MAX_LENGTH_LIMIT: number = 1 << 20;
+const MAX_LENGTH_LIMIT = 1 << 20;
 /** Hard ceiling for `maxElements`. */
-export const MAX_ELEMENTS_LIMIT: number = 1024;
+const MAX_ELEMENTS_LIMIT = 1024;
 
 const DEFAULT_MAX_LENGTH = 64 * 1024;
 // One hop, because in the text format a crafted URI SAN can add a forged last
@@ -38,7 +40,7 @@ export interface XfccElement {
   readonly dns: readonly string[];
   /**
    * The client certificate's issuer as an RFC 4514 string. Always `null` in
-   * the text format unless `allowTextIssuer` is set.
+   * the text format, where a crafted URI SAN `a;Issuer="..."` can set it.
    */
   readonly issuer: string | null;
 }
@@ -58,91 +60,44 @@ export interface ParseOptions {
    * auto-detected, because a text header can be crafted to look like JSON.
    */
   readonly format: 'text' | 'json';
-  /**
-   * Require `Cert` and `Hash` in every element and check that `Hash` is the
-   * SHA-256 of `Cert`. Defaults to `false`. This does not prove an element is
-   * genuine: a crafted SAN can carry a copy of any public certificate.
-   */
-  readonly requireCertHash?: boolean;
-  /**
-   * Return `issuer` from the text format. Defaults to `false`, because a
-   * crafted URI SAN `a;Issuer="..."` sets it. Has no effect on JSON.
-   */
-  readonly allowTextIssuer?: boolean;
 }
 
 /** A relative distinguished name: one or more attributes joined by `+`. */
 export type Rdn = readonly DnAttribute[];
 
-const invalidOption = (name: string): XfccError =>
-  new XfccError('INVALID_OPTION', `${name} is out of range`);
+const PEER_KEYS: ReadonlySet<string> = new Set([...PARSE_OPTION_KEYS, 'requireSingleSan']);
 
-const checkInteger = (
-  name: string,
-  value: unknown,
-  max: number,
-): number | undefined | XfccError => {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > max) {
-    return invalidOption(name);
+const invalidOption = (name: string): TypeError => new TypeError(`${name} is out of range`);
+
+const checkInteger = (name: string, value: unknown, max: number): number | undefined => {
+  if (
+    value !== undefined &&
+    (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > max)
+  ) {
+    throw invalidOption(name);
   }
   return value;
 };
 
-interface NormalizedOptions {
-  readonly maxLength: number;
-  readonly maxElements: number;
-  readonly format: 'text' | 'json';
-  readonly requireCertHash: boolean;
-  readonly allowTextIssuer: boolean;
-}
+type NormalizedOptions = Required<ParseOptions>;
 
-// Plain JavaScript can omit `options`, which then fails like any invalid one.
-const normalizeOptions = (
-  options: ParseOptions | null | undefined,
-): NormalizedOptions | XfccError => {
-  const own = readOptions(options, PARSE_OPTION_KEYS);
-  if (typeof own === 'string') {
-    return new XfccError('INVALID_OPTION', own);
-  }
-  const { format, requireCertHash, allowTextIssuer } = own;
+// An invalid option is a bug in the caller, not untrusted input, so it throws
+// `TypeError`: an `XfccError` would read as a rejected caller.
+const normalizeOptions = (own: ParseOptions): NormalizedOptions => {
+  const { format } = own;
   if (format === undefined) {
-    return new XfccError('INVALID_OPTION', 'format is required');
+    throw new TypeError('format is required');
   }
   if (format !== 'text' && format !== 'json') {
-    return invalidOption('format');
-  }
-  if (requireCertHash !== undefined && typeof requireCertHash !== 'boolean') {
-    return invalidOption('requireCertHash');
-  }
-  if (allowTextIssuer !== undefined && typeof allowTextIssuer !== 'boolean') {
-    return invalidOption('allowTextIssuer');
-  }
-  const maxLength = checkInteger('maxLength', own.maxLength, MAX_LENGTH_LIMIT);
-  if (maxLength instanceof XfccError) {
-    return maxLength;
-  }
-  const maxElements = checkInteger('maxElements', own.maxElements, MAX_ELEMENTS_LIMIT);
-  if (maxElements instanceof XfccError) {
-    return maxElements;
+    throw invalidOption('format');
   }
   return {
-    maxLength: maxLength ?? DEFAULT_MAX_LENGTH,
-    maxElements: maxElements ?? DEFAULT_MAX_ELEMENTS,
+    maxLength: checkInteger('maxLength', own.maxLength, MAX_LENGTH_LIMIT) ?? DEFAULT_MAX_LENGTH,
+    maxElements:
+      checkInteger('maxElements', own.maxElements, MAX_ELEMENTS_LIMIT) ?? DEFAULT_MAX_ELEMENTS,
     format,
-    requireCertHash: requireCertHash ?? false,
-    allowTextIssuer: allowTextIssuer ?? false,
   };
 };
-
-/** The result of `safeParseXfcc`: the elements, or the error `parseXfcc` would throw. */
-export type XfccResult =
-  | { readonly ok: true; readonly value: readonly XfccElement[] }
-  | { readonly ok: false; readonly error: XfccError };
-
-const fail = (error: XfccError): XfccResult => Object.freeze({ ok: false, error });
 
 const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] => {
   // A string's UTF-16 length never exceeds its UTF-8 length.
@@ -162,37 +117,9 @@ const parseHeader = (value: string, options: NormalizedOptions): XfccElement[] =
   if (blank) {
     throw reject('EMPTY', 0);
   }
-  return options.format === 'text' ? parseText(value, options) : parseJson(value, options);
-};
-
-/**
- * Like `parseXfcc`, but returns a malformed header as `{ ok: false, error }`
- * instead of throwing. Check `ok` before using `value`.
- *
- * Invalid `options` are reported the same way. A `header` that is not a
- * string, an array of strings or `undefined` is a bug in the caller and still
- * throws `TypeError`.
- */
-export const safeParseXfcc = (
-  header: string | readonly string[] | undefined,
-  options: ParseOptions,
-): XfccResult => {
-  const normalized = normalizeOptions(options);
-  if (normalized instanceof XfccError) {
-    return fail(normalized);
-  }
-  if (header === undefined) {
-    return Object.freeze({ ok: true, value: Object.freeze([]) });
-  }
-  const value = typeof header === 'string' ? header : joinHeaderLines(header);
-  try {
-    return Object.freeze({ ok: true, value: Object.freeze(parseHeader(value, normalized)) });
-  } catch (error) {
-    if (error instanceof XfccError) {
-      return fail(error);
-    }
-    throw error;
-  }
+  return options.format === 'text'
+    ? parseText(value, options.maxElements)
+    : parseJson(value, options.maxElements);
 };
 
 /**
@@ -206,29 +133,64 @@ export const safeParseXfcc = (
  *   An array (multiple header lines) is joined with `,` per RFC 9110.
  * @param options `format` is required. `maxElements` defaults to 1.
  * @throws {XfccError} if the header is malformed in any way.
+ * @throws {TypeError} if `options` or the type of `header` is invalid.
  */
+// Plain JavaScript can omit `options`, which then fails like any invalid one.
 export const parseXfcc = (
   header: string | readonly string[] | undefined,
   options: ParseOptions,
+): readonly XfccElement[] => parse(header, readOptions(options, PARSE_OPTION_KEYS));
+
+/** `parseXfcc`, with `own` already copied by `readOptions`. */
+const parse = (
+  header: string | readonly string[] | undefined,
+  own: ParseOptions,
 ): readonly XfccElement[] => {
-  const result = safeParseXfcc(header, options);
-  if (!result.ok) {
-    throw result.error;
+  const normalized = normalizeOptions(own);
+  if (header === undefined) {
+    return Object.freeze([]);
   }
-  return result.value;
+  const value = typeof header === 'string' ? header : joinHeaderLines(header);
+  return Object.freeze(parseHeader(value, normalized));
 };
 
-export {
-  getPeerSpiffeId,
-  safeGetPeerSpiffeId,
-  SpiffeError,
-  spiffeIdOf,
-  type SpiffeErrorCode,
-  type SpiffeId,
-  type SpiffeIdResult,
-  type SpiffeIdOptions,
-  type PeerSpiffeIdOptions,
-} from './spiffe.ts';
+/**
+ * Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest
+ * to this service: the last element of the header.
+ *
+ * Takes the options of `parseXfcc`, so `format` is required and `maxElements`
+ * defaults to 1 (set it to the exact number of proxy hops), plus
+ * `requireSingleSan`. If a proxy that is not the caller sits between the
+ * caller and this service, this returns that proxy's ID.
+ *
+ * The element must have exactly one URI SAN: in the text format, a crafted SAN
+ * can look like two. That check cannot tell whether a crafted SAN forged the
+ * whole element, so it is only as safe as `maxElements`. The ID must be a
+ * workload ID (trust domain plus a non-empty path) that matches the SPIFFE-ID
+ * standard, with a lowercase scheme, and in the text format by default the
+ * element must have no DNS SAN. `issuer` is ignored.
+ *
+ * @throws {XfccError} if the header is malformed, has no element, or its last
+ *   element does not carry exactly one valid SPIFFE ID.
+ * @throws {TypeError} if `options` or the type of `header` is invalid.
+ */
+export const getPeerSpiffeId = (
+  header: string | readonly string[] | undefined,
+  options: PeerSpiffeIdOptions,
+): SpiffeId => {
+  // Not a rest-spread: its copy would inherit from `Object.prototype`.
+  const own = readOptions(options, PEER_KEYS);
+  const { requireSingleSan } = own;
+  if (requireSingleSan !== undefined && typeof requireSingleSan !== 'boolean') {
+    throw invalidOption('requireSingleSan');
+  }
+  // The LAST element was appended by the proxy closest to this service.
+  const nearest = parse(header, own).at(-1);
+  if (nearest === undefined) {
+    throw rejectPeer('NO_PEER');
+  }
+  return readSpiffeId(nearest, requireSingleSan ?? own.format === 'text');
+};
 
 const joinHeaderLines = (lines: readonly string[]): string => {
   if (!Array.isArray(lines) || !lines.every((line) => typeof line === 'string')) {
@@ -245,7 +207,7 @@ const joinHeaderLines = (lines: readonly string[]): string => {
  * values before logging or displaying them.
  *
  * @throws {XfccError} with code `INVALID_DN` if `dn` is not valid RFC 4514, or
- *   `TOO_LONG` if it is longer than `MAX_LENGTH_LIMIT` bytes.
+ *   `TOO_LONG` if it is longer than 1 MiB.
  */
 export const parseDistinguishedName = (dn: string): readonly Rdn[] => {
   if (typeof dn !== 'string') {

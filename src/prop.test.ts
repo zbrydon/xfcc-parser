@@ -3,19 +3,20 @@
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
-import { CA_PEM, CLIENT_PEM, urlEncode } from '../test/helpers.ts';
+import { CA_PEM, CLIENT_PEM, errorOf, urlEncode } from '../test/helpers.ts';
 
-import { parseDistinguishedName, safeParseXfcc, XfccError, type XfccElement } from './index.ts';
+import {
+  parseDistinguishedName,
+  parseXfcc,
+  XfccError,
+  type ParseOptions,
+  type XfccElement,
+} from './index.ts';
 
 fc.configureGlobal({ numRuns: 512 });
 
-// Several hops and a text-format Issuer, so round trips cover every key.
-const TEXT = {
-  format: 'text',
-  maxElements: 32,
-  allowTextIssuer: true,
-  maxLength: 1 << 20,
-} as const;
+// Several hops, so round trips cover multi-element headers.
+const TEXT = { format: 'text', maxElements: 32, maxLength: 1 << 20 } as const;
 const JSON_FORMAT = { format: 'json', maxElements: 32, maxLength: 1 << 20 } as const;
 
 const char = (chars: string) => fc.constantFrom(...chars.split(''));
@@ -153,10 +154,10 @@ const emitJson = (elements: readonly XfccElement[]) =>
     )
     .join(',')}]`;
 
-/** `parseDistinguishedName` may reject, but only with an `XfccError`. */
-const parseDnOrNull = (input: string) => {
+/** `fn` may reject, but only with an `XfccError`, which reads as `null`. */
+const orNull = <T>(fn: () => T): T | null => {
   try {
-    return parseDistinguishedName(input);
+    return fn();
   } catch (error) {
     if (error instanceof XfccError) {
       return null;
@@ -165,12 +166,37 @@ const parseDnOrNull = (input: string) => {
   }
 };
 
+const parseOrNull = (input: string, options: ParseOptions) =>
+  orNull(() => parseXfcc(input, options));
+
 describe('round trips', () => {
   it('parses what the text emitter writes', () => {
     fc.assert(
       fc.property(fc.array(element, { minLength: 1, maxLength: 3 }), (elements) => {
-        expect(safeParseXfcc(emitText(elements), TEXT)).toEqual({ ok: true, value: elements });
+        // The text format validates `Issuer` but never returns it.
+        expect(parseXfcc(emitText(elements), TEXT)).toEqual(
+          elements.map((el) => ({ ...el, issuer: null })),
+        );
       }),
+    );
+  });
+
+  it('rejects a text Issuer the DN parser rejects', () => {
+    fc.assert(
+      fc.property(
+        fc.array(element, { maxLength: 2 }),
+        element,
+        dnRdns.map(formatDn),
+        fc.constantFrom(',', '+'),
+        (rest, last, issuer, suffix) => {
+          const header = emitText([...rest, { ...last, issuer: `${issuer}${suffix}` }]);
+          const { code, offset } = errorOf(() => parseXfcc(header, TEXT));
+          expect({ code, offset }).toEqual({
+            code: 'INVALID_DN',
+            offset: header.lastIndexOf('Issuer="') + 'Issuer='.length,
+          });
+        },
+      ),
     );
   });
 
@@ -183,10 +209,7 @@ describe('round trips', () => {
           subject: el.subject === '' ? null : el.subject,
           issuer: el.issuer === '' ? null : el.issuer,
         }));
-        expect(safeParseXfcc(emitJson(elements), JSON_FORMAT)).toEqual({
-          ok: true,
-          value: expected,
-        });
+        expect(parseXfcc(emitJson(elements), JSON_FORMAT)).toEqual(expected);
       }),
     );
   });
@@ -205,13 +228,11 @@ describe('round trips', () => {
 describe('arbitrary input', () => {
   it('never throws anything but an XfccError', () => {
     fc.assert(
-      fc.property(fc.string({ unit: 'binary', maxLength: 256 }), fc.boolean(), (input, verify) => {
+      fc.property(fc.string({ unit: 'binary', maxLength: 256 }), (input) => {
         for (const format of ['text', 'json'] as const) {
-          expect(safeParseXfcc(input, { format, requireCertHash: verify }).ok).toBeTypeOf(
-            'boolean',
-          );
+          expect(() => parseOrNull(input, { format })).not.toThrow();
         }
-        expect(() => parseDnOrNull(input)).not.toThrow();
+        expect(() => orNull(() => parseDistinguishedName(input))).not.toThrow();
       }),
     );
   });
@@ -227,8 +248,7 @@ describe('arbitrary input', () => {
           const header = json ? emitJson(elements) : emitText(elements);
           const i = index % header.length;
           const mutated = `${header.slice(0, i)}${replacement}${header.slice(i + 1)}`;
-          const result = safeParseXfcc(mutated, json ? JSON_FORMAT : TEXT);
-          for (const el of result.ok ? result.value : []) {
+          for (const el of parseOrNull(mutated, json ? JSON_FORMAT : TEXT) ?? []) {
             expect(el.hash ?? '0'.repeat(64)).toMatch(/^[0-9a-f]{64}$/);
             // Anything accepted has a parseable, plain-ASCII DN.
             for (const dn of [el.subject, el.issuer].filter((value) => value !== null)) {

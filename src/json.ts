@@ -9,7 +9,7 @@
 // The whole shape is checked before any value is validated. The caller has
 // checked that the input is visible ASCII, SP and HTAB, so a string index is a
 // byte offset, and the only JSON whitespace left is SP and HTAB.
-import { ElementBuilder, KEY, type ElementOptions, type Key } from './element.ts';
+import { ElementBuilder, KEY, type Key } from './element.ts';
 import { reject, type XfccError } from './errors.ts';
 import { hexVal } from './validate.ts';
 
@@ -62,7 +62,6 @@ interface RawList {
 }
 
 interface RawElement {
-  readonly offset: number;
   readonly lists: Map<Key, RawList>;
   readonly singles: Map<Key, Value>;
 }
@@ -146,7 +145,6 @@ class Parser {
   }
 
   #element(): RawElement {
-    const offset = this.#pos;
     const lists = new Map<Key, RawList>();
     const singles = new Map<Key, Value>();
     // Only a non-empty object: an array or `{}` is not a shape Envoy writes.
@@ -154,7 +152,7 @@ class Parser {
     do {
       this.#field(lists, singles);
     } while (this.#more(CLOSE_OBJECT));
-    return { offset, lists, singles };
+    return { lists, singles };
   }
 
   #field(lists: Map<Key, RawList>, singles: Map<Key, Value>): void {
@@ -279,8 +277,8 @@ class Parser {
 const LIST_ORDER = [KEY.BY, KEY.CHAIN, KEY.URI, KEY.DNS] as const;
 const SINGLE_ORDER = [KEY.HASH, KEY.CERT, KEY.SUBJECT, KEY.ISSUER] as const;
 
-const toElement = (raw: RawElement, options: ElementOptions): XfccElement => {
-  const builder = new ElementBuilder('json', options);
+const toElement = (raw: RawElement): XfccElement => {
+  const builder = new ElementBuilder('json');
   for (const key of LIST_ORDER) {
     const list = raw.lists.get(key);
     if (list?.values.length === 0) {
@@ -305,13 +303,13 @@ const toElement = (raw: RawElement, options: ElementOptions): XfccElement => {
       builder.set(key, value.text, value.offset);
     }
   }
-  return builder.finish(raw.offset);
+  return builder.finish();
 };
 
-export const parseJson = (input: string, options: ElementOptions): XfccElement[] => {
-  const raw = new Parser(input).header(options.maxElements);
+export const parseJson = (input: string, maxElements: number): XfccElement[] => {
+  const raw = new Parser(input).header(maxElements);
   if (raw.length === 0) {
     throw reject('EMPTY', 0);
   }
-  return raw.map((element) => toElement(element, options));
+  return raw.map(toElement);
 };

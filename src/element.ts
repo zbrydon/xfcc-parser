@@ -1,6 +1,6 @@
 import { parseDn } from './dn.ts';
 import { reject, XfccError } from './errors.ts';
-import { parseCertificate, parseCertificates, percentDecode, sha256Hex } from './pem.ts';
+import { parseCertificate, parseCertificates, percentDecode } from './pem.ts';
 import { validDns, validHash, validUri } from './validate.ts';
 
 import type { XfccElement } from './index.ts';
@@ -18,13 +18,6 @@ export const KEY = {
 } as const;
 
 export type Key = (typeof KEY)[keyof typeof KEY];
-
-/** The options the format parsers read. */
-export interface ElementOptions {
-  readonly maxElements: number;
-  readonly requireCertHash: boolean;
-  readonly allowTextIssuer: boolean;
-}
 
 /**
  * Rejects a `Subject` / `Issuer` that is not RFC 4514, or that holds a raw
@@ -55,7 +48,6 @@ export class ElementBuilder {
   #hash: string | null = null;
   readonly #by: string[] = [];
   #cert: string | null = null;
-  #certDer: Buffer | null = null;
   readonly #presentedChain: string[] = [];
   #subject: string | null = null;
   readonly #uri: string[] = [];
@@ -63,12 +55,9 @@ export class ElementBuilder {
   readonly #dns: string[] = [];
   #issuer: string | null = null;
   readonly #text: boolean;
-  readonly #options: ElementOptions;
 
-  /** In the `text` format every element must have a `Hash`. */
-  constructor(format: 'text' | 'json', options: ElementOptions) {
+  constructor(format: 'text' | 'json') {
     this.#text = format === 'text';
-    this.#options = options;
   }
 
   /**
@@ -139,12 +128,11 @@ export class ElementBuilder {
         if (this.#cert !== null) {
           throw reject('DUPLICATE_KEY', offset);
         }
-        const block = parseCertificate(this.#text ? decode(value, offset) : value);
-        if (block === undefined) {
+        const cert = parseCertificate(this.#text ? decode(value, offset) : value);
+        if (cert === undefined) {
           throw reject('INVALID_PEM', offset);
         }
-        this.#cert = block.pem;
-        this.#certDer = block.der;
+        this.#cert = cert;
         break;
       }
       case KEY.CHAIN:
@@ -158,31 +146,20 @@ export class ElementBuilder {
           if (blocks.length === 0) {
             throw reject('INVALID_PEM', offset);
           }
-          this.#presentedChain.push(...blocks.map((block) => block.pem));
+          this.#presentedChain.push(...blocks);
         } else {
-          const block = parseCertificate(value);
-          if (block === undefined) {
+          const cert = parseCertificate(value);
+          if (cert === undefined) {
             throw reject('INVALID_PEM', offset);
           }
-          this.#presentedChain.push(block.pem);
+          this.#presentedChain.push(cert);
         }
         break;
     }
   }
 
-  /** The frozen element, once the format's and `requireCertHash`'s checks hold. */
-  finish(offset: number): XfccElement {
-    if (this.#text && this.#hash === null) {
-      throw reject('MISSING_HASH', offset);
-    }
-    if (this.#options.requireCertHash) {
-      if (this.#certDer === null || this.#hash === null) {
-        throw reject('MISSING_CERT_OR_HASH', offset);
-      }
-      if (sha256Hex(this.#certDer) !== this.#hash) {
-        throw reject('HASH_MISMATCH', offset);
-      }
-    }
+  /** The frozen element. */
+  finish(): XfccElement {
     return Object.freeze({
       by: Object.freeze(this.#by),
       hash: this.#hash,
@@ -192,8 +169,8 @@ export class ElementBuilder {
       uri: Object.freeze(this.#uri),
       dns: Object.freeze(this.#dns),
       // In the text format a URI SAN `a;Issuer="..."` is indistinguishable
-      // from a real Issuer.
-      issuer: !this.#text || this.#options.allowTextIssuer ? this.#issuer : null,
+      // from a real Issuer, so it is validated but never returned.
+      issuer: this.#text ? null : this.#issuer,
     });
   }
 }

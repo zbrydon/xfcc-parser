@@ -1,6 +1,20 @@
 import { deepStrictEqual, ok } from 'node:assert/strict';
 
+import { parseXfcc, XfccError } from '../../dist/index.mjs';
+
 export { deepStrictEqual, ok };
+
+/** `parseXfcc` as `{ ok, value }` or `{ ok, error }`. Rethrows anything but an `XfccError`. */
+export const tryParse = (header, options) => {
+  try {
+    return { ok: true, value: parseXfcc(header, options) };
+  } catch (error) {
+    if (error instanceof XfccError) {
+      return { ok: false, error };
+    }
+    throw error;
+  }
+};
 
 /** A fuzz input as text, the way the parser sees it once Node has decoded it. */
 export const text = (data) => data.toString('utf8');

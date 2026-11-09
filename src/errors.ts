@@ -24,39 +24,42 @@ const MESSAGES = {
   INVALID_DN: 'value is not an RFC 4514 distinguished name',
   KEY_ORDER: 'keys are not in the order Envoy writes them',
   MISSING_HASH: 'element has no Hash',
-  MISSING_CERT_OR_HASH: 'requireCertHash requires both Cert and Hash in every element',
-  HASH_MISMATCH: 'SHA-256 of Cert does not match Hash',
   INVALID_JSON: 'invalid JSON-format XFCC value',
 } as const;
 
-// `INVALID_OPTION` has no fixed message: each caller names the option.
-export type XfccErrorCode = keyof typeof MESSAGES | 'INVALID_OPTION';
+// `getPeerSpiffeId`'s checks of a parsed element, which have no offset.
+const PEER_MESSAGES = {
+  NO_PEER: 'header has no elements',
+  NOT_ONE_URI: 'expected exactly one URI SAN',
+  NOT_ONE_SAN: 'expected no SAN besides the URI SAN',
+  NOT_SPIFFE: 'URI SAN is not a SPIFFE ID',
+  INVALID_SPIFFE_ID: 'URI SAN is not a valid SPIFFE ID',
+} as const;
 
-/** An error with no stack trace. */
-export class StacklessError extends Error {
-  constructor(message: string) {
+export type XfccErrorCode = keyof typeof MESSAGES | keyof typeof PEER_MESSAGES;
+
+/**
+ * Thrown for any header, distinguished name or SPIFFE ID that does not
+ * strictly match the format. The message never contains input, so it is safe
+ * to log. It has no stack trace.
+ */
+export class XfccError extends Error {
+  override readonly name = 'XfccError';
+  readonly code: XfccErrorCode;
+  /**
+   * Byte offset into the input where the problem was found. Unset for
+   * `getPeerSpiffeId`'s own codes.
+   */
+  readonly offset: number | undefined;
+
+  constructor(code: XfccErrorCode, message: string, offset?: number) {
     // Capturing a stack trace is most of the cost of rejecting a header, and
     // the stack of an error about untrusted input says nothing useful.
     // `Reflect.set` fails quietly where `Error` is frozen (SES lockdown, say).
     const { stackTraceLimit } = Error;
     Reflect.set(Error, 'stackTraceLimit', 0);
-    super(message);
-    Reflect.set(Error, 'stackTraceLimit', stackTraceLimit);
-  }
-}
-
-/**
- * Thrown for any header or distinguished name that does not strictly match
- * the format. The message never contains input, so it is safe to log.
- */
-export class XfccError extends StacklessError {
-  override readonly name = 'XfccError';
-  readonly code: XfccErrorCode;
-  /** Byte offset into the input where the problem was found. Unset for `INVALID_OPTION`. */
-  readonly offset: number | undefined;
-
-  constructor(code: XfccErrorCode, message: string, offset?: number) {
     super(offset === undefined ? `${code}: ${message}` : `${code}: ${message} (at byte ${offset})`);
+    Reflect.set(Error, 'stackTraceLimit', stackTraceLimit);
     this.code = code;
     this.offset = offset;
   }
@@ -65,3 +68,7 @@ export class XfccError extends StacklessError {
 /** Builds the error for `code`, with its fixed message. */
 export const reject = (code: keyof typeof MESSAGES, offset: number): XfccError =>
   new XfccError(code, MESSAGES[code], offset);
+
+/** Builds the error for one of `getPeerSpiffeId`'s codes, which have no offset. */
+export const rejectPeer = (code: keyof typeof PEER_MESSAGES): XfccError =>
+  new XfccError(code, PEER_MESSAGES[code]);

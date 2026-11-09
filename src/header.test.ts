@@ -13,10 +13,9 @@ import {
 
 import { parseDistinguishedName, parseXfcc, type ParseOptions } from './index.ts';
 
-// Several hops and a text-format Issuer, so the grammar tests see every key.
-const TEXT = { format: 'text', maxElements: 32, allowTextIssuer: true } as const;
+// Several hops, so the grammar tests reach later elements.
+const TEXT = { format: 'text', maxElements: 32 } as const;
 const JSON_FORMAT = { format: 'json', maxElements: 32 } as const;
-const VERIFY = { ...TEXT, requireCertHash: true } as const;
 const ONE_HOP = { format: 'text' } as const;
 
 const code = (header: string, options: ParseOptions = TEXT) =>
@@ -106,7 +105,7 @@ describe('Envoy documentation examples', () => {
 describe('text format as Envoy writes it', () => {
   it('accepts an empty URI, Subject and Issuer', () => {
     expect(parseXfcc(`Hash=${HASH_A};Subject="";URI=;Issuer=""`, TEXT)).toEqual([
-      { ...element, hash: HASH_A, subject: '', issuer: '' },
+      { ...element, hash: HASH_A, subject: '' },
     ]);
   });
 
@@ -234,10 +233,9 @@ describe('SAN injection', () => {
     expect(cross?.dns).toEqual(['admin.internal']);
   });
 
-  it('returns a text-format Issuer only when asked', () => {
+  it('never returns a text-format Issuer', () => {
     const issuer = `By=spiffe://p;Hash=${HASH_A};URI=spiffe://td/x;Issuer="CN=Trusted Root CA"`;
-    expect(parseXfcc(issuer, TEXT)[0]?.issuer).toBe('CN=Trusted Root CA');
-    expect(parseXfcc(issuer, ONE_HOP)[0]?.issuer).toBeNull();
+    expect(parseXfcc(issuer, TEXT)[0]?.issuer).toBeNull();
     expect(code(`Hash=${HASH_A};Issuer="CN"`, ONE_HOP)).toBe('INVALID_DN');
     expect(parseXfcc('[{"issuer":"CN=CA"}]', { format: 'json' })[0]?.issuer).toBe('CN=CA');
   });
@@ -247,21 +245,12 @@ describe('SAN injection', () => {
     expect(parseXfcc(forged, TEXT)[1]?.uri).toEqual(['spiffe://td/admin']);
     expect(code(forged, ONE_HOP)).toBe('TOO_MANY_ELEMENTS');
 
+    // A SAN that may contain `"` can carry any public certificate with its hash.
     const cert = urlEncode(CLIENT_PEM);
     const real = `By=spiffe://p;Hash=${CLIENT_SHA256};Cert="${cert}";URI=spiffe://td/x`;
-    expect(code(`${real},By=spiffe://p;Hash=${HASH_B};URI=spiffe://td/admin`, VERIFY)).toBe(
-      'MISSING_CERT_OR_HASH',
-    );
-    expect(
-      code(
-        `${real},By=spiffe://p;Hash=${CLIENT_SHA256};Cert=${cert};URI=spiffe://td/admin`,
-        VERIFY,
-      ),
-    ).toBe('INVALID_QUOTING');
-    // A SAN that may contain `"` can carry any public certificate with its hash.
     const quoted = `${real},By=spiffe://p;Hash=${CLIENT_SHA256};Cert="${cert}";URI=spiffe://td/admin`;
-    expect(parseXfcc(quoted, VERIFY)[1]?.uri).toEqual(['spiffe://td/admin']);
-    expect(code(quoted, { ...VERIFY, maxElements: 1 })).toBe('TOO_MANY_ELEMENTS');
+    expect(parseXfcc(quoted, TEXT)[1]?.uri).toEqual(['spiffe://td/admin']);
+    expect(code(quoted, ONE_HOP)).toBe('TOO_MANY_ELEMENTS');
   });
 
   it('parses a text header crafted to look like JSON as text', () => {
@@ -378,41 +367,32 @@ describe('text format rejections', () => {
   });
 });
 
-describe('requireCertHash', () => {
+describe('Cert and Chain', () => {
   const cert = urlEncode(CLIENT_PEM);
 
-  it('decodes Cert and Chain and accepts a matching hash', () => {
+  it('decodes Cert and Chain', () => {
     const header = `By=spiffe://mesh/proxy;Hash=${CLIENT_SHA256};Cert="${cert}";Chain="${urlEncode(`${CLIENT_PEM}${CA_PEM}`)}"`;
-    const [parsed] = parseXfcc(header, VERIFY);
+    const [parsed] = parseXfcc(header, TEXT);
     expect(parsed?.cert).toBe(CLIENT_PEM);
     expect(parsed?.presentedChain).toEqual([CLIENT_PEM, CA_PEM]);
+    expect(code(`Cert="${cert}"`)).toBe('MISSING_HASH');
   });
 
-  it('rejects a mismatch and a missing Cert or Hash', () => {
-    const mismatch = `Hash=${HASH_A};Cert="${cert}"`;
-    expect(code(mismatch, VERIFY)).toBe('HASH_MISMATCH');
-    expect(code(`Hash=${HASH_A}`, VERIFY)).toBe('MISSING_CERT_OR_HASH');
-    expect(code(`Cert="${cert}"`, VERIFY)).toBe('MISSING_HASH');
-    // The last element is verified too.
-    expect(code(`Hash=${CLIENT_SHA256};Cert="${cert}",${mismatch}`, VERIFY)).toBe('HASH_MISMATCH');
-  });
-
-  it('applies to the JSON format', () => {
-    const options = { format: 'json', requireCertHash: true } as const;
+  it('does not compare Hash with Cert', () => {
+    // Anyone able to forge an element can make the two agree, so the parser
+    // does not pretend a match proves anything.
+    expect(parseXfcc(`Hash=${HASH_A};Cert="${cert}"`, TEXT)[0]?.cert).toBe(CLIENT_PEM);
     const certJson = JSON.stringify(CLIENT_PEM);
-    expect(parseXfcc(`[{"hash":"${CLIENT_SHA256}","cert":${certJson}}]`, options)[0]?.cert).toBe(
+    expect(parseXfcc(`[{"hash":"${HASH_A}","cert":${certJson}}]`, JSON_FORMAT)[0]?.cert).toBe(
       CLIENT_PEM,
     );
-    expect(code(`[{"hash":"${HASH_A}","cert":${certJson}}]`, options)).toBe('HASH_MISMATCH');
-    expect(code(`[{"cert":${certJson}}]`, options)).toBe('MISSING_CERT_OR_HASH');
-    expect(code(`[{"hash":"${HASH_A}"}]`, options)).toBe('MISSING_CERT_OR_HASH');
   });
 });
 
 describe('JSON format', () => {
   it('parses Cert, Chain, Subject and Issuer', () => {
     const header = `[{"hash":"${CLIENT_SHA256}","cert":${JSON.stringify(CLIENT_PEM)},"chain":${JSON.stringify([CLIENT_PEM, CA_PEM])},"subject":${JSON.stringify(NASTY_SUBJECT)},"issuer":"CN=Test CA,O=Lyft,C=US"}]`;
-    const [parsed] = parseXfcc(header, { ...JSON_FORMAT, requireCertHash: true });
+    const [parsed] = parseXfcc(header, JSON_FORMAT);
     expect(parsed?.cert).toBe(CLIENT_PEM);
     expect(parsed?.presentedChain).toEqual([CLIENT_PEM, CA_PEM]);
     expect(parsed?.subject).toBe(NASTY_SUBJECT);

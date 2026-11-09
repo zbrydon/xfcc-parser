@@ -4,8 +4,7 @@
    "input": "By=http://frontend.lyft.com;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"CN=Test Client,OU=Lyft,L=San Francisco,ST=CA,C=US\";URI=http://testclient.lyft.com;DNS=lyft.com;DNS=www.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -33,8 +32,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"\";URI=;Issuer=\"\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -46,7 +44,7 @@
       "subject": "",
       "uri": [],
       "dns": [],
-      "issuer": ""
+      "issuer": null
      }
     ]
    }
@@ -75,8 +73,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"description=caf\\C3\\A9,UID=\\  #pad\\ +CN=evil\\,O=Admin,OU=a\\\"b\\\\c,O=Lyft,C=US\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -97,8 +94,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"CN=a\\\\\";URI=http://x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -121,8 +117,7 @@
    "input": " Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688 , Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688,\tHash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=http://c ",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -165,8 +160,7 @@
    "input": "by=http://A;HASH=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;sUbJeCt=\"CN=X\";uRi=http://B;dns=Lyft.Com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -193,8 +187,7 @@
    "input": "By=http://y/?k==v;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=http://x/?a=b&c=d",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -219,9 +212,7 @@
    "input": "Hash=10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f;Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -242,9 +233,7 @@
    "input": "Hash=10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f;Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\";Chain=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A-----BEGIN%20CERTIFICATE-----%0AMIIBszCCAVmgAwIBAgIUeNLYcgkF8gom0W77O4Ql1b44LmYwCgYIKoZIzj0EAwIw%0ALjELMAkGA1UEBhMCVVMxDTALBgNVBAoMBEx5ZnQxEDAOBgNVBAMMB1Rlc3QgQ0Ew%0AIBcNMjYxMDMwMTA1OTMwWhgPMjEyNjEwMDYxMDU5MzBaMC4xCzAJBgNVBAYTAlVT%0AMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMFkwEwYHKoZIzj0CAQYI%0AKoZIzj0DAQcDQgAET3KVl9XFADczssUZizYA0kcO3OuWtAxAdOhb4tI7JBrFePfq%0A3wtzr3%2FBMQKglK6P1AOQMB7YmY1PDiiv8X8iYqNTMFEwHQYDVR0OBBYEFO9%2Bzk5N%0A7tXC3m%2FcMtKvU%2F97oBYdMB8GA1UdIwQYMBaAFO9%2Bzk5N7tXC3m%2FcMtKvU%2F97oBYd%0AMA8GA1UdEwEB%2FwQFMAMBAf8wCgYIKoZIzj0EAwIDSAAwRQIgBSYsSywoJgiCJq4P%0AXEqicMew%2FoBKdNekMkLWmXYh5JgCIQDnK4v%2BpH6A1Le8uNslUr9%2FQroFn2MePH2d%0AxfvKdwB%2Fng%3D%3D%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -268,35 +257,49 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "HASH_MISMATCH",
-    "offset": 0
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "MISSING_CERT_OR_HASH",
-    "offset": 0
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": null,
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
    "input": "Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
     "code": "MISSING_HASH",
@@ -307,13 +310,31 @@
    "input": "Hash=10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f;Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\",Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "HASH_MISMATCH",
-    "offset": 873
+    "value": [
+     {
+      "by": [],
+      "hash": "10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     },
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
@@ -340,8 +361,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688,,Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_ELEMENT",
@@ -352,8 +372,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688, ,Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_ELEMENT",
@@ -364,8 +383,7 @@
    "input": ",",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_ELEMENT",
@@ -376,8 +394,7 @@
    "input": "",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY",
@@ -388,8 +405,7 @@
    "input": " \t ",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY",
@@ -400,8 +416,7 @@
    "input": "URI=http://a;",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_PAIR",
@@ -412,8 +427,7 @@
    "input": "URI=http://a;;URI=b:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_PAIR",
@@ -424,8 +438,7 @@
    "input": "URI=http://a;,URI=b:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_PAIR",
@@ -436,8 +449,7 @@
    "input": ";URI=a:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "MISSING_EQUALS",
@@ -448,8 +460,7 @@
    "input": "URI",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "MISSING_EQUALS",
@@ -460,8 +471,7 @@
    "input": "URI=a:;DNS",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -472,8 +482,7 @@
    "input": "=a:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNKNOWN_KEY",
@@ -484,8 +493,7 @@
    "input": "Foo=bar",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNKNOWN_KEY",
@@ -496,8 +504,7 @@
    "input": " URI =a:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNKNOWN_KEY",
@@ -508,8 +515,7 @@
    "input": "URI=a:; DNS=a.b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -520,8 +526,7 @@
    "input": "URI=a: ;DNS=a.b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNEXPECTED_AFTER_VALUE",
@@ -532,8 +537,7 @@
    "input": "URI= a:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNEXPECTED_AFTER_VALUE",
@@ -544,8 +548,7 @@
    "input": "URI=a: b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNEXPECTED_AFTER_VALUE",
@@ -556,8 +559,7 @@
    "input": "Subject=CN=a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -568,8 +570,7 @@
    "input": "Issuer=CN=a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -580,8 +581,7 @@
    "input": "Cert=",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -592,8 +592,7 @@
    "input": "Chain=x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -604,8 +603,7 @@
    "input": "Subject=\"CN=a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNTERMINATED_QUOTE",
@@ -616,8 +614,7 @@
    "input": "Subject=\"CN=a\\\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNTERMINATED_QUOTE",
@@ -628,8 +625,7 @@
    "input": "Subject=\"CN=a\\",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNTERMINATED_QUOTE",
@@ -640,8 +636,7 @@
    "input": "Subject=\"CN=a\"x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNEXPECTED_AFTER_VALUE",
@@ -652,8 +647,7 @@
    "input": "Subject=\"CN=a\"\"\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNEXPECTED_AFTER_VALUE",
@@ -664,8 +658,7 @@
    "input": "Subject=\"CN=a\" ;URI=a:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "UNEXPECTED_AFTER_VALUE",
@@ -676,8 +669,7 @@
    "input": "URI=a\"b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_ESCAPE",
@@ -688,8 +680,7 @@
    "input": "URI=a\\b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_ESCAPE",
@@ -700,8 +691,7 @@
    "input": "URI=\"a:\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -712,8 +702,7 @@
    "input": "By=\"a:\";Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -724,8 +713,7 @@
    "input": "Hash=\"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -736,8 +724,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=\"a.b\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_QUOTING",
@@ -748,8 +735,7 @@
    "input": "By=",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_VALUE",
@@ -760,8 +746,7 @@
    "input": "DNS=",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_VALUE",
@@ -772,8 +757,7 @@
    "input": "Hash=",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_VALUE",
@@ -784,8 +768,7 @@
    "input": "Cert=\"\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_VALUE",
@@ -796,8 +779,7 @@
    "input": "Chain=\"\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "EMPTY_VALUE",
@@ -808,8 +790,7 @@
    "input": "Cert=\"a\\b\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_ESCAPE",
@@ -820,8 +801,7 @@
    "input": "Hash=abc",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_HASH",
@@ -832,8 +812,7 @@
    "input": "Hash=468ED33BE74EEE6556D90C0149C1309E9BA61D6425303443C0748A02DD8DE688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_HASH",
@@ -844,8 +823,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -856,8 +834,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Hash=x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_HASH",
@@ -868,8 +845,7 @@
    "input": "Subject=\"CN=a\";Subject=\"CN=a\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -880,8 +856,7 @@
    "input": "Issuer=\"CN=a\";ISSUER=\"CN=b\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -892,8 +867,7 @@
    "input": "Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\";Cert=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -904,8 +878,7 @@
    "input": "Chain=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\";Chain=\"-----BEGIN%20CERTIFICATE-----%0AMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT%0AAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw%0ANTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC%0AQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV%0ABAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL%2BKV1H8F%0ASR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m%0A8VEbMXDqZVjWOKOBgTB%2FMD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5%0AZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh%0AmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P%2Fe6AWHTAK%0ABggqhkjOPQQDAgNIADBFAiEA%2FS3LX6voF%2B19ykUhV7lv4k21otHU7qCHOQ1ZkQnw%0A6RcCIF5l89FAL6Fq%2FMI0v81LTLPHjmgvi1OzqFCKi47wZhYY%0A-----END%20CERTIFICATE-----%0A\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -916,8 +889,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=spiffe://td/admin;URI=",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -928,8 +900,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=;URI=a:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -940,8 +911,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=;URI=",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "DUPLICATE_KEY",
@@ -952,8 +922,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=a.com;URI=spiffe://admin",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "KEY_ORDER",
@@ -964,8 +933,7 @@
    "input": "URI=a:;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -976,8 +944,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:,URI=b:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -988,8 +955,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:;DNS=admin.internal",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1010,8 +976,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:;Issuer=\"CN=Trusted\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1022,8 +987,7 @@
    "input": "URI=relative",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1034,8 +998,7 @@
    "input": "DNS=-bad.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -1046,8 +1009,7 @@
    "input": "DNS=*.*.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -1058,8 +1020,7 @@
    "input": "Subject=\"CN=a;O=b\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DN",
@@ -1070,8 +1031,7 @@
    "input": "Subject=\"not a dn\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DN",
@@ -1082,8 +1042,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"CN=a\tb\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1094,8 +1053,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Issuer=\"CN=a\tb\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1106,8 +1064,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"CN=a\u007fb\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1118,8 +1075,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject=\"CN=ad\\09min\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1140,8 +1096,7 @@
    "input": "Cert=\"%ZZ\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PERCENT_ENCODING",
@@ -1152,8 +1107,7 @@
    "input": "Cert=\"abc+def\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PERCENT_ENCODING",
@@ -1164,8 +1118,7 @@
    "input": "Cert=\"abc\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PEM",
@@ -1176,8 +1129,7 @@
    "input": "Cert=\"%C3%A9\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PEM",
@@ -1188,8 +1140,7 @@
    "input": "Cert=\"%\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PERCENT_ENCODING",
@@ -1200,8 +1151,7 @@
    "input": "Cert=\"%2\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PERCENT_ENCODING",
@@ -1212,8 +1162,7 @@
    "input": "Chain=\"abc\"",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_PEM",
@@ -1224,8 +1173,7 @@
    "input": "URI=http://a\n",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1236,8 +1184,7 @@
    "input": "URI=http://a\r\n",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1248,8 +1195,7 @@
    "input": "URI=\u0000",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1260,8 +1206,7 @@
    "input": "URI=http://\u00e9",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1272,8 +1217,7 @@
    "input": "\u007f",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1284,8 +1228,7 @@
    "input": "URI=http://\ud800",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_CHAR",
@@ -1296,8 +1239,7 @@
    "input": "[{\"uri\":[\"a:b\"]}]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "MISSING_EQUALS",
@@ -1308,8 +1250,7 @@
    "input": "[{\"uri\":[\"spiffe://x/,By=spiffe://test/proxy;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a\"]}},{\"uri\":[\"spiffe://test/victim\"]}]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "MISSING_EQUALS",
@@ -1321,7 +1262,6 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
     "maxLength": 20
    },
    "expected": {
@@ -1334,7 +1274,6 @@
    "options": {
     "format": "text",
     "maxElements": 8,
-    "allowTextIssuer": true,
     "maxLength": 4
    },
    "expected": {
@@ -1346,8 +1285,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:,Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=b:,Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=c:",
    "options": {
     "format": "text",
-    "maxElements": 2,
-    "allowTextIssuer": true
+    "maxElements": 2
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1358,8 +1296,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=http://frontend.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1382,8 +1319,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=spiffe://cluster.local/ns/default/sa/foo",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1406,8 +1342,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=urn:uuid:6e8bc430-9c3a-11d9-9669-0800200c9a66",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1430,8 +1365,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=http://x/?a=b&c=d",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1454,8 +1388,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=/relative",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1466,8 +1399,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=no-scheme",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1478,8 +1410,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=http://x/%zz",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1490,8 +1421,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=urn:",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1502,8 +1432,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:#f",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1514,8 +1443,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1538,8 +1466,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://:80",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1562,8 +1489,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[::1]:80/",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1586,8 +1512,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[v1.x]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1610,8 +1535,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[V1.x:]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1634,8 +1558,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[v.x]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1646,8 +1569,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[v1.]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1658,8 +1580,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[v1x]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1670,8 +1591,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[1:2:3:4:5:6:7::]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1694,8 +1614,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[1:2:3:4:5:6:7:8::]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1706,8 +1625,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[fe80::1%25en0]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1718,8 +1636,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[::ffff:1.2.3.4]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1742,8 +1659,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[::ffff:01.2.3.4]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1754,8 +1670,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[::1",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1766,8 +1681,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1778,8 +1692,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[1.2.3.4]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1790,8 +1703,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[::g]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1802,8 +1714,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:b:c",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1826,8 +1737,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:?q",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1850,8 +1760,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:/",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1874,8 +1783,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u:p@h:1/x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1898,8 +1806,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u@[::1]:9/",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1922,8 +1829,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u@[bad]/",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1934,8 +1840,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u@h:x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1946,8 +1851,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://a:1:2",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1958,8 +1862,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://a:b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -1970,8 +1873,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://a:1/x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -1994,8 +1896,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://[::1]x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2006,8 +1907,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://x[::1]",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2018,8 +1918,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://%41",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2042,8 +1941,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://%4",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2054,8 +1952,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=1a:b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2066,8 +1963,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a+b.c-d:e",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2090,8 +1986,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:b%2",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2102,8 +1997,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:b%zz",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2114,8 +2008,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=A:b",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2138,8 +2031,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a_b:c",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2150,8 +2042,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2162,8 +2053,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://h/p?q#f",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2186,8 +2076,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://h?q",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2210,8 +2099,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://h#f",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2234,8 +2122,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:b#f#g",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2246,8 +2133,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:b?c?d",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2270,8 +2156,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u@h/%",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2282,8 +2167,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u@%4/",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2294,8 +2178,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://u@h?x",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2318,8 +2201,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:%41",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2342,8 +2224,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a://h/[",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2354,8 +2235,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=a:[",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2366,8 +2246,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;URI=:a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_URI",
@@ -2378,8 +2257,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2402,8 +2280,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=www.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2426,8 +2303,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=localhost",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2450,8 +2326,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=1password.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2474,8 +2349,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=xn--bcher-kva.example",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2498,8 +2372,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=*.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2522,8 +2395,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=a-b.c",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2546,8 +2418,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2570,8 +2441,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=.",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2582,8 +2452,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=lyft.com.",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2594,8 +2463,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2606,8 +2474,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=lyft..com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2618,8 +2485,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=-lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2630,8 +2496,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=lyft-.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2642,8 +2507,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=ly_ft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2654,8 +2518,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=*",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2666,8 +2529,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=*.",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2678,8 +2540,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=w*.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2690,8 +2551,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=www.*.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2702,8 +2562,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=*.*.lyft.com",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2714,8 +2573,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=lyft,evil",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "MISSING_EQUALS",
@@ -2726,8 +2584,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2738,8 +2595,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "code": "INVALID_DNS",
@@ -2750,8 +2606,7 @@
    "input": "Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;DNS=a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a",
    "options": {
     "format": "text",
-    "maxElements": 8,
-    "allowTextIssuer": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2914,8 +2769,7 @@
    "input": "[{\"hash\":\"10e95ee5e02e24df12c126c4a7cae01672587a0b844928932ce72d805297040f\",\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\\n-----END CERTIFICATE-----\\n\",\"chain\":[\"-----BEGIN CERTIFICATE-----\\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\\n-----END CERTIFICATE-----\\n\",\"-----BEGIN CERTIFICATE-----\\nMIIBszCCAVmgAwIBAgIUeNLYcgkF8gom0W77O4Ql1b44LmYwCgYIKoZIzj0EAwIw\\nLjELMAkGA1UEBhMCVVMxDTALBgNVBAoMBEx5ZnQxEDAOBgNVBAMMB1Rlc3QgQ0Ew\\nIBcNMjYxMDMwMTA1OTMwWhgPMjEyNjEwMDYxMDU5MzBaMC4xCzAJBgNVBAYTAlVT\\nMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMFkwEwYHKoZIzj0CAQYI\\nKoZIzj0DAQcDQgAET3KVl9XFADczssUZizYA0kcO3OuWtAxAdOhb4tI7JBrFePfq\\n3wtzr3/BMQKglK6P1AOQMB7YmY1PDiiv8X8iYqNTMFEwHQYDVR0OBBYEFO9+zk5N\\n7tXC3m/cMtKvU/97oBYdMB8GA1UdIwQYMBaAFO9+zk5N7tXC3m/cMtKvU/97oBYd\\nMA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSAAwRQIgBSYsSywoJgiCJq4P\\nXEqicMew/oBKdNekMkLWmXYh5JgCIQDnK4v+pH6A1Le8uNslUr9/QroFn2MePH2d\\nxfvKdwB/ng==\\n-----END CERTIFICATE-----\\n\"],\"subject\":\"description=caf\\\\C3\\\\A9,UID=\\\\  #pad\\\\ +CN=evil\\\\,O=Admin,OU=a\\\\\\\"b\\\\\\\\c,O=Lyft,C=US\",\"issuer\":\"CN=Test CA,O=Lyft,C=US\"}]",
    "options": {
     "format": "json",
-    "maxElements": 8,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
     "value": [
@@ -2939,24 +2793,42 @@
    "input": "[{\"hash\":\"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688\",\"cert\":\"-----BEGIN CERTIFICATE-----\\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\\n-----END CERTIFICATE-----\\n\"}]",
    "options": {
     "format": "json",
-    "maxElements": 8,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "HASH_MISMATCH",
-    "offset": 1
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIJANjIWy50ejONMAoGCCqGSM49BAMCMC4xCzAJBgNVBAYT\nAlVTMQ0wCwYDVQQKDARMeWZ0MRAwDgYDVQQDDAdUZXN0IENBMCAXDTI2MTAzMDEw\nNTkzMFoYDzIxMjYxMDA2MTA1OTMwWjBXMQswCQYDVQQGEwJVUzELMAkGA1UECAwC\nQ0ExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAsMBEx5ZnQxFDASBgNV\nBAMMC1Rlc3QgQ2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL+KV1H8F\nSR4sLlrqZHgQkrrpYKyXw1SrZxkVdaQrkaAAmcPrXZSZJjrYBV6hHGEU9CWq7g2m\n8VEbMXDqZVjWOKOBgTB/MD0GA1UdEQQ2MDSGGmh0dHA6Ly90ZXN0Y2xpZW50Lmx5\nZnQuY29tgghseWZ0LmNvbYIMd3d3Lmx5ZnQuY29tMB0GA1UdDgQWBBSCNlnXf5uh\nmWKxZ8uf8j8zIBIJXzAfBgNVHSMEGDAWgBTvfs5OTe7Vwt5v3DLSr1P/e6AWHTAK\nBggqhkjOPQQDAgNIADBFAiEA/S3LX6voF+19ykUhV7lv4k21otHU7qCHOQ1ZkQnw\n6RcCIF5l89FAL6Fq/MI0v81LTLPHjmgvi1OzqFCKi47wZhYY\n-----END CERTIFICATE-----\n",
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {
    "input": "[{\"hash\":\"468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688\"}]",
    "options": {
     "format": "json",
-    "maxElements": 8,
-    "requireCertHash": true
+    "maxElements": 8
    },
    "expected": {
-    "code": "MISSING_CERT_OR_HASH",
-    "offset": 1
+    "value": [
+     {
+      "by": [],
+      "hash": "468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688",
+      "cert": null,
+      "presentedChain": [],
+      "subject": null,
+      "uri": [],
+      "dns": [],
+      "issuer": null
+     }
+    ]
    }
   },
   {

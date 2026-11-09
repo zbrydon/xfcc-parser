@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { CA_PEM, CLIENT_PEM, CLIENT_SHA256, urlEncode } from '../test/helpers.ts';
+import { CA_PEM, CLIENT_PEM, urlEncode } from '../test/helpers.ts';
 
-import { parseCertificate, parseCertificates, percentDecode, sha256Hex } from './pem.ts';
+import { parseCertificate, parseCertificates, percentDecode } from './pem.ts';
 
 const BEGIN = '-----BEGIN CERTIFICATE-----';
 const END = '-----END CERTIFICATE-----';
@@ -40,22 +40,22 @@ describe('percentDecode', () => {
 
 describe('parseCertificate', () => {
   it('parses one certificate', () => {
-    const block = parseCertificate(CLIENT_PEM);
-    expect(block?.pem).toBe(CLIENT_PEM);
-    expect(block && sha256Hex(block.der)).toBe(CLIENT_SHA256);
+    expect(parseCertificate(CLIENT_PEM)).toBe(CLIENT_PEM);
   });
 
   it('accepts CRLF, CR and a missing final line break', () => {
-    const der = parseCertificate(CLIENT_PEM)?.der;
-    expect(parseCertificate(CLIENT_PEM.replaceAll('\n', '\r\n'))?.der).toEqual(der);
-    expect(parseCertificate(CLIENT_PEM.replaceAll('\n', '\r'))?.der).toEqual(der);
-    const trimmed = CLIENT_PEM.trimEnd();
-    expect(parseCertificate(trimmed)?.pem).toBe(trimmed);
+    for (const pem of [
+      CLIENT_PEM.replaceAll('\n', '\r\n'),
+      CLIENT_PEM.replaceAll('\n', '\r'),
+      CLIENT_PEM.trimEnd(),
+    ]) {
+      expect(parseCertificate(pem)).toBe(pem);
+    }
   });
 
   it('parses a chain in order, and only as a chain', () => {
     const chain = `${CLIENT_PEM}${CA_PEM}`;
-    expect(parseCertificates(chain).map((block) => block.pem)).toEqual([CLIENT_PEM, CA_PEM]);
+    expect(parseCertificates(chain)).toEqual([CLIENT_PEM, CA_PEM]);
     expect(parseCertificate(chain)).toBeUndefined();
   });
 

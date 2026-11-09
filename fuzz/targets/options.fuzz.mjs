@@ -1,6 +1,8 @@
-import { MAX_ELEMENTS_LIMIT, MAX_LENGTH_LIMIT, safeParseXfcc } from '../../dist/index.mjs';
+import { ok, tryParse } from './common.mjs';
 
-import { ok } from './common.mjs';
+// The documented ceilings of `maxLength` and `maxElements`.
+const MAX_LENGTH_LIMIT = 1 << 20;
+const MAX_ELEMENTS_LIMIT = 1024;
 
 // The first 7 bytes pick the options, the rest is the header. Sizes are reduced
 // so both sides of every limit (including invalid ones) are reachable.
@@ -15,8 +17,6 @@ export const fuzz = (data) => {
     maxLength: (data[6] & 4) !== 0 ? maxLength % 256 : maxLength,
     maxElements: (data[6] & 8) !== 0 ? maxElements % 4 : maxElements,
     format: (data[5] & 1) === 0 ? 'text' : 'json',
-    requireCertHash: (data[5] & 2) !== 0,
-    allowTextIssuer: (data[5] & 4) !== 0,
   };
   const valid =
     options.maxLength >= 1 &&
@@ -24,15 +24,22 @@ export const fuzz = (data) => {
     options.maxElements >= 1 &&
     options.maxElements <= MAX_ELEMENTS_LIMIT;
   const bytes = Buffer.byteLength(input);
-  const result = safeParseXfcc(input, options);
+  let result;
+  try {
+    result = tryParse(input, options);
+  } catch (error) {
+    // An invalid option is a caller bug, so it throws TypeError, never XfccError.
+    if (!(error instanceof TypeError)) {
+      throw error;
+    }
+    ok(!valid);
+    return;
+  }
+  ok(valid);
   if (result.ok) {
-    ok(valid);
     ok(bytes <= options.maxLength);
     ok(result.value.length >= 1 && result.value.length <= options.maxElements);
-  } else {
-    ok((result.error.code === 'INVALID_OPTION') === !valid);
-    if (valid && bytes > options.maxLength) {
-      ok(result.error.code === 'TOO_LONG');
-    }
+  } else if (bytes > options.maxLength) {
+    ok(result.error.code === 'TOO_LONG');
   }
 };

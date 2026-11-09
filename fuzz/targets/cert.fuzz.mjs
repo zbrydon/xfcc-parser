@@ -1,8 +1,4 @@
-import { createHash } from 'node:crypto';
-
-import { safeParseXfcc } from '../../dist/index.mjs';
-
-import { ok, urlEncode } from './common.mjs';
+import { ok, tryParse, urlEncode } from './common.mjs';
 
 /** A DER SEQUENCE around `content`. */
 const der = (content) => {
@@ -16,19 +12,20 @@ const pem = (bytes) => {
   return `-----BEGIN CERTIFICATE-----\n${lines.map((line) => `${line}\n`).join('')}-----END CERTIFICATE-----\n`;
 };
 
-const isAccepted = (header, options) => safeParseXfcc(header, options).ok;
+// Hash is not compared with Cert, so any valid hash will do.
+const hash = 'a'.repeat(64);
+
+const isAccepted = (header, options) => tryParse(header, options).ok;
 
 // Random bytes almost never form valid PEM, so build well-formed headers from
-// the input and check the whole Cert / Chain / Hash path accepts them.
+// the input and check the whole Cert / Chain path accepts them.
 export const fuzz = (data) => {
   if (data.length === 0) {
     return;
   }
   const rest = data.subarray(1);
   const split = Math.min(rest.length, data[0] * 8);
-  const leafDer = der(rest.subarray(0, Math.min(split, 1500)));
-  const leaf = pem(leafDer);
-  const hash = createHash('sha256').update(leafDer).digest('hex');
+  const leaf = pem(der(rest.subarray(0, Math.min(split, 1500))));
   const chain = [];
   for (let i = split; i < rest.length && chain.length < 4; i += 200) {
     chain.push(pem(der(rest.subarray(i, i + 200))));
@@ -41,15 +38,11 @@ export const fuzz = (data) => {
     ['text', textHeader],
     ['json', jsonHeader],
   ]) {
-    const options = { format, requireCertHash: true, maxLength: 1 << 20 };
-    const result = safeParseXfcc(header, options);
+    const options = { format, maxLength: 1 << 20 };
+    const result = tryParse(header, options);
     ok(result.ok, `${format}: ${header}`);
     ok(result.value[0].hash === hash);
     ok(result.value[0].cert === leaf);
-
-    // A wrong hash must always be rejected under requireCertHash.
-    const wrong = hash.startsWith('0') ? `1${hash.slice(1)}` : `0${hash.slice(1)}`;
-    ok(!isAccepted(header.replace(hash, wrong), options));
 
     // Near-valid headers must be rejected: a stray control byte, a missing
     // closing delimiter, and (text) a trailing separator or repeated Hash.
