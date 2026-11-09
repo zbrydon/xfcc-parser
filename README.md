@@ -17,19 +17,21 @@ Node.js >= 22.18.
 To know which service is calling, read the caller's SPIFFE ID and look it up in an allow list of exact IDs:
 
 ```ts
-import { getPeerSpiffeId, XfccError } from 'xfcc-parser';
+import { getPeerSpiffeId, XfccError } from "xfcc-parser";
 
 // The exact SPIFFE IDs this service accepts, and who each one is.
 const callers = new Map([
-  ['spiffe://cluster.local/ns/payments/sa/api', 'payments'],
-  ['spiffe://cluster.local/ns/billing/sa/worker', 'billing'],
+  ["spiffe://cluster.local/ns/payments/sa/api", "payments"],
+  ["spiffe://cluster.local/ns/billing/sa/worker", "billing"],
 ]);
 
 let caller: string | undefined;
 try {
   // `format` must match the Envoy listener. `maxElements` defaults to 1: if more
   // than one of your proxies appends an element, set it to the exact hop count.
-  const { id } = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
+  const { id } = getPeerSpiffeId(request.headers["x-forwarded-client-cert"], {
+    format: "json",
+  });
   caller = callers.get(id);
 } catch (error) {
   // Every rejected header is an XfccError. A TypeError means the options are wrong.
@@ -45,13 +47,19 @@ if (caller === undefined) {
 For an identity that is not a SPIFFE ID, parse the header and check the nearest element yourself:
 
 ```ts
-import { parseDistinguishedName, parseXfcc } from 'xfcc-parser';
+import { parseDistinguishedName, parseXfcc } from "xfcc-parser";
 
 // The LAST element was appended by the proxy closest to this service. Require
 // exactly one SAN across `uri` and `dns`: in the text format, two SANs and one
 // crafted SAN can look the same.
-const nearest = parseXfcc(request.headers['x-forwarded-client-cert'], { format: 'json' }).at(-1);
-if (nearest?.uri.length !== 0 || nearest.dns.length !== 1 || nearest.dns[0] !== 'api.internal') {
+const nearest = parseXfcc(request.headers["x-forwarded-client-cert"], {
+  format: "json",
+}).at(-1);
+if (
+  nearest?.uri.length !== 0 ||
+  nearest.dns.length !== 1 ||
+  nearest.dns[0] !== "api.internal"
+) {
   throw new Forbidden();
 }
 ```
@@ -59,7 +67,7 @@ if (nearest?.uri.length !== 0 || nearest.dns.length !== 1 || nearest.dns[0] !== 
 ```ts
 parseXfcc(
   'By=http://frontend.lyft.com;Hash=468ed33be74eee6556d90c0149c1309e9ba61d6425303443c0748a02dd8de688;Subject="CN=Test Client,OU=Lyft,L=San Francisco,ST=CA,C=US";URI=http://testclient.lyft.com',
-  { format: 'text' },
+  { format: "text" },
 );
 // [
 //   {
@@ -74,7 +82,7 @@ parseXfcc(
 //   },
 // ]
 
-parseDistinguishedName('CN=evil\\,O=Admin,O=Lyft');
+parseDistinguishedName("CN=evil\\,O=Admin,O=Lyft");
 // [
 //   [{ type: 'CN', value: 'evil,O=Admin', encoding: 'string' }],
 //   [{ type: 'O', value: 'Lyft', encoding: 'string' }],
@@ -86,9 +94,11 @@ parseDistinguishedName('CN=evil\\,O=Admin,O=Lyft');
 Returns the SPIFFE ID of the mTLS peer that connected to the proxy closest to this service: the last element of the header. It takes the same arguments as [`parseXfcc`](#parsexfccheader-options), plus `options.requireSingleSan`. If more than one of your proxies appends an element, set `maxElements` to the exact hop count.
 
 ```ts
-import { getPeerSpiffeId } from 'xfcc-parser';
+import { getPeerSpiffeId } from "xfcc-parser";
 
-const peer = getPeerSpiffeId(request.headers['x-forwarded-client-cert'], { format: 'json' });
+const peer = getPeerSpiffeId(request.headers["x-forwarded-client-cert"], {
+  format: "json",
+});
 // {
 //   id: 'spiffe://cluster.local/ns/payments/sa/api',
 //   trustDomain: 'cluster.local',
@@ -217,7 +227,7 @@ This builds the package and benchmarks `dist/`, because Vitest's module runner a
 
 1. Add a changeset with `pnpm changeset`. Merging to `main` opens a "Version Packages" PR.
 2. Merging that PR builds and tests the package, then stages it on npm after approval in the `release` environment.
-3. Review the staged version with `npm stage view <id>`, then approve it with 2FA using `npm stage approve <id>` or on npmjs.com.
+3. Review the staged version with `pnpm stage view <id>`, then approve it with 2FA using `pnpm stage approve <id>` or on npmjs.com.
 4. Create the GitHub release and tag with `scripts/release.sh [version]`. It tags the commit named in the npm provenance and uses the version's section of `CHANGELOG.md` as the notes.
 
 ## License
