@@ -23,7 +23,7 @@ jobs:
       matrix:
         # The newest must match devEngines.runtime in package.json. The oldest is
         # the minimum in package.json engines.
-        node: [22.18.0, 24.22.1, 26.12.1]
+        node: [22.18.0, 24.22.3, 26.13.1]
     steps:
       - name: Check out repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -31,7 +31,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           runtime: node@${{ matrix.node }}
           install: false
@@ -52,7 +52,7 @@ jobs:
 
       # Not `pnpm lint`, which builds again.
       - name: Lint
-        if: matrix.node == '26.12.1'
+        if: matrix.node == '26.13.1'
         run: pnpm lint:check
 
       - name: Test
